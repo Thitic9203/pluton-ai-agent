@@ -24,7 +24,7 @@
  * main-audit.mjs), so they are imported when a command runs, not at load: the tests of this file
  * run in the script suite, which has no install step and imports node:* only.
  *
- * Environment: GITHUB_TOKEN, GITHUB_REPOSITORY, GITHUB_EVENT_NAME, GITHUB_EVENT_PATH,
+ * Environment: GITHUB_TOKEN, GITHUB_REPOSITORY, PRODUCT_REPO (the product, spec repo-split R18), GITHUB_EVENT_NAME, GITHUB_EVENT_PATH,
  * GITHUB_OUTPUT, GITHUB_API_URL (all set by Actions), and for main-audit AGENT_APP_LOGIN.
  * sweep is a dry run unless AGENT_SWEEP_FILE is '1', and stops when AGENT_AI_COST_UNPAID is
  * 'true'; it reads the repository from the working directory, so it runs from the root.
@@ -480,7 +480,7 @@ export async function stopIssue(gh, number, body) {
  * that Slack hears nothing.
  */
 export function stopApi(env, gh, makeApi = api, log = console.log) {
-  if (env.AGENT_STOP_TOKEN) return makeApi({ token: env.AGENT_STOP_TOKEN, repo: env.GITHUB_REPOSITORY, base: env.GITHUB_API_URL || undefined });
+  if (env.AGENT_STOP_TOKEN) return makeApi({ token: env.AGENT_STOP_TOKEN, repo: productRepo(env), base: env.GITHUB_API_URL || undefined });
   log('::warning::AGENT_STOP_TOKEN is not set, so agent:blocked is set with the workflow token and no Slack notice follows');
   return gh;
 }
@@ -531,7 +531,7 @@ async function runDispatch(env, gh, event) {
     eventName: env.GITHUB_EVENT_NAME,
     event,
     building,
-    repo: env.GITHUB_REPOSITORY,
+    repo: productRepo(env),
     mods: { decide, isOwnerAct, parseCommand, LIMIT, appLogin: env.AGENT_APP_LOGIN, appEvidence },
   });
   if (d.action === 'drain') {
@@ -542,7 +542,7 @@ async function runDispatch(env, gh, event) {
       : { ...d, action: 'ignore', reason: `${d.reason}; nothing queued may start` };
   }
   if (d.action === 'merge-check' && d.issue === null) {
-    const pr = prForSha(await gh.all(`/repos/{repo}/commits/${d.sha}/pulls?per_page=100`), env.GITHUB_REPOSITORY);
+    const pr = prForSha(await gh.all(`/repos/{repo}/commits/${d.sha}/pulls?per_page=100`), productRepo(env));
     d = pr ? { ...d, issue: pr } : { ...d, action: 'ignore', reason: `${d.reason}; no open agent pull request has ${d.sha}` };
   }
   // The label goes on here, while this job still holds the repo-wide agent-dispatch group, so the
@@ -594,7 +594,7 @@ async function runPullRequest(env, gh) {
   });
   const moved = branchExists ? handoffProblem({ issue: env.ISSUE, sha: env.AGENT_EXPECTED_SHA, head }) : null;
   if (moved) throw new Error(`open-pr refused: ${moved}`);
-  const owner = env.GITHUB_REPOSITORY.split('/')[0];
+  const owner = productRepo(env).split('/')[0];
   const open = branchExists ? await gh.all(`/repos/{repo}/pulls?state=open&head=${owner}:${branch}&per_page=100`) : [];
   let s = prStep({ labels: labelNames(issue), files, filesComplete: true, openPr: open[0]?.number ?? null, branchExists });
   // Plan row 15: the pull request goes into release/next, never the default branch. The .github/
@@ -647,7 +647,7 @@ async function judgePullRequest(env, gh, n) {
     reviewJob: reviewResultsFromStatuses(statuses, sha, env.AGENT_APP_LOGIN),
     checkRuns: withoutOwnCheckRun(runs),
   });
-  const release = releaseMergeProblem({ pr, repo: env.GITHUB_REPOSITORY, sha });
+  const release = releaseMergeProblem({ pr, repo: productRepo(env), sha });
   if (release) verdict.reasons.push(`The Tech Lead step cannot merge it: ${release}.`);
   return { pr, sha, verdict: { ok: verdict.reasons.length === 0, reasons: verdict.reasons } };
 }
@@ -679,13 +679,13 @@ async function runReleaseMerge(env, gh, event) {
   if (!env.AGENT_MERGE_TOKEN) throw new Error('AGENT_MERGE_TOKEN is not set, so nothing can merge');
   const n = prNumber(env, event);
   const { pr, verdict } = await judgePullRequest(env, gh, n);
-  const moved = releaseMergeProblem({ pr, repo: env.GITHUB_REPOSITORY, sha: env.AGENT_MERGE_SHA });
+  const moved = releaseMergeProblem({ pr, repo: productRepo(env), sha: env.AGENT_MERGE_SHA });
   if (moved) verdict.reasons.push(`The Tech Lead step cannot merge it: ${moved}.`);
   if (verdict.reasons.length) {
     for (const r of verdict.reasons) console.log(`::error::${r}`);
     return { exit: 1, outputs: { merged: false } };
   }
-  const merger = api({ token: env.AGENT_MERGE_TOKEN, repo: env.GITHUB_REPOSITORY, base: env.GITHUB_API_URL || undefined });
+  const merger = api({ token: env.AGENT_MERGE_TOKEN, repo: productRepo(env), base: env.GITHUB_API_URL || undefined });
   const out = await merger.put(`/repos/{repo}/pulls/${n}/merge`, { sha: env.AGENT_MERGE_SHA, merge_method: 'merge' });
   if (out?.merged !== true) throw new Error(`the merge of #${n} into ${RELEASE_BRANCH} did not report merged: ${out?.message ?? 'no message'}`);
   await gh.post(`/repos/{repo}/issues/${n}/comments`, {
@@ -823,7 +823,30 @@ const COMMANDS = {
   'triage-candidates': runTriageCandidates,
   'triage-apply': runTriageApply,
   'slack-notify': async (env, gh, event, args) => (await load('slack-notify.mjs')).runSlackNotify(env, gh, event, args),
+  event: async (env, gh, event) => ({ exit: 0, outputs: eventOutputs(env.GITHUB_EVENT_NAME, event) }),
 };
+
+/**
+ * The product repository the agent works on (docs/sdd/repo-split/spec.md R18): PRODUCT_REPO, set by
+ * every workflow of pluton-ai-agent, with GITHUB_REPOSITORY as the fallback from before the split.
+ */
+export function productRepo(env) {
+  return env.PRODUCT_REPO || env.GITHUB_REPOSITORY;
+}
+
+/**
+ * The step outputs of `cli.mjs event` (spec R16): what a job `if:` may test after the event was
+ * rebuilt from the API, so no job reads a sender or a label from the relay's payload.
+ */
+export function eventOutputs(eventName, event) {
+  return {
+    name: eventName,
+    action: String(event?.action ?? ''),
+    number: event?.issue?.number ?? event?.pull_request?.number ?? '',
+    label: event?.label?.name ?? '',
+    sender: event?.sender?.login ?? '',
+  };
+}
 
 /** The commands that recognise the App by its login. */
 const NEED_APP_LOGIN = new Set(['context', 'merge-check', 'release-merge', 'main-audit', 'slack-notify', 'triage-candidates', 'triage-apply']);
@@ -873,8 +896,21 @@ export async function main(argv, env = process.env, deps = {}) {
     if (!env[k]) throw new Error(`${k} is not set`);
   }
   if (NEED_APP_LOGIN.has(argv[0]) && !env.AGENT_APP_LOGIN) throw new Error('AGENT_APP_LOGIN is not set, so no App commit or review could be recognised');
-  const event = JSON.parse(readFileSync(env.GITHUB_EVENT_PATH, 'utf8'));
-  const gh = api({ token: env.GITHUB_TOKEN, repo: env.GITHUB_REPOSITORY, base: env.GITHUB_API_URL || undefined });
+  const raw = JSON.parse(readFileSync(env.GITHUB_EVENT_PATH, 'utf8'));
+  const gh = api({ token: env.GITHUB_TOKEN, repo: productRepo(env), base: env.GITHUB_API_URL || undefined });
+  // docs/sdd/repo-split/spec.md R16: a relayed event is rebuilt from pluton-timesheet's API, and every
+  // command then sees the event name and body it judged before the split.
+  let event = raw;
+  if (env.GITHUB_EVENT_NAME === 'repository_dispatch') {
+    const { rehydrate, UNCONFIRMED } = await load('relay-event.mjs');
+    const r = await rehydrate({ type: raw?.action, payload: raw?.client_payload }, gh);
+    env = { ...env, GITHUB_EVENT_NAME: r.eventName };
+    event = r.event;
+    if (event.action === UNCONFIRMED) {
+      console.log(`relay: ${raw?.action} not confirmed by the API (${event.reason}); nothing is judged from it`);
+      if (argv[0] !== 'dispatch' && argv[0] !== 'event') return 0;
+    }
+  }
   const { exit, outputs } = await run(env, gh, event, argv.slice(1));
   if (env.GITHUB_OUTPUT) appendFileSync(env.GITHUB_OUTPUT, outputLines(outputs));
   return exit;

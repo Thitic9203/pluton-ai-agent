@@ -118,7 +118,7 @@ export async function runCount(env, { gh }) {
   const decision = batchDecision({ waiting, issues });
   let message = '';
   if (decision.notify) {
-    message = qaLeadMessage({ waiting, qaLead: env.AGENT_QA_LEAD, repo: env.GITHUB_REPOSITORY });
+    message = qaLeadMessage({ waiting, qaLead: env.AGENT_QA_LEAD, repo: env.PRODUCT_REPO || env.GITHUB_REPOSITORY });
     for (const n of decision.toLabel) await gh.post(`/repos/{repo}/issues/${n}/labels`, { labels: [BATCH_READY_LABEL] });
     await gh.post(`/repos/{repo}/issues/${Math.max(...waiting)}/comments`, { body: message });
   }
@@ -162,7 +162,7 @@ export async function runRelease(env, { gh, isAncestor, now = () => new Date(), 
 }
 
 export async function main(argv, env = process.env) {
-  const gh = client({ token: env.GITHUB_TOKEN, repo: env.GITHUB_REPOSITORY, base: env.GITHUB_API_URL || undefined });
+  const gh = client({ token: env.GITHUB_TOKEN, repo: env.PRODUCT_REPO || env.GITHUB_REPOSITORY, base: env.GITHUB_API_URL || undefined });
   const command = argv[0];
   if (command === 'staged') return runStaged(env, { gh, isAncestor: gitIsAncestor(env.HEAD_SHA) });
   if (command === 'comment') return runComment(env, { gh });
