@@ -1,0 +1,750 @@
+name: Deploy Agent Office
+
+# The Agent Office live page (docs/sdd/agent-office-live/spec.md, plan.md "Hosting layout") runs on
+# its own Cloudflare Pages projects, one per environment, both free plan: agent-office-staging and
+# agent-office-prod. Each deployment is the page in agent-office/public, the board snapshot
+# public/data/state.json, and one Function, agent-office/functions/data/_middleware.ts, which only
+# checks the caller (Firebase ID token and an active users/{uid}) before it serves the snapshot.
+#
+# Main thread design change, 16 Oct 2026 (spec R41, R65): no GitHub token and no Pages secret. The
+# snapshot is built here, in Node, by scripts/agent-office-snapshot.mjs with this job's own
+# GITHUB_TOKEN (read scopes only, set per job below), and published with the page.
+#
+# Same shape as deploy-jira-proxy.yml. A push of main that touches the page publishes it to staging
+# once its tests pass. Production is only reached by hand (target production) with the full sha of
+# a commit this workflow already published to staging (R46). A pull request runs the tests and
+# publishes nothing.
+#
+# Refresh (R65): an issue event, the end of an agent workflow, or a run by hand (target refresh)
+# rebuilds the snapshot and republishes, to each environment, the exact sha that environment already
+# serves (its public version.txt), so a refresh never changes code and never puts on production a
+# commit that skipped staging. A refresh publishes nothing while a code deploy of this workflow is
+# queued or running, or once version.txt has moved. No schedule: Q21 (deployment count on the free
+# plan) is open.
+#
+# Credentials: the Jira proxy's own Cloudflare tokens, reused (owner, 16 Oct 2026, popup: "ใช้ token
+# เดิม ขยายเทสต์ให้ job นี้อ่านได้"; DECISION_LOG "Agent Office deploy reuses the Cloudflare Pages
+# tokens"): CLOUDFLARE_API_TOKEN_STAGING, a secret of the GitHub environment staging, and
+# CLOUDFLARE_API_TOKEN_PROD, a secret of production, each an Account › Cloudflare Pages › Edit token,
+# plus the repository variable CLOUDFLARE_ACCOUNT_ID. scripts/lib/workflow-security.test.mjs names
+# exactly which jobs here may read each one. AGENT_ENABLED is the repository variable the agent
+# workflows read.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - agent-office/**
+      - scripts/agent-office-config.mjs
+      - scripts/agent-office-snapshot.mjs
+      - scripts/agent-office-smoke.mjs
+      - scripts/lib/agent-office.mjs
+      - scripts/lib/agent-office.test.mjs
+      - scripts/lib/agent-office-snapshot.mjs
+      - scripts/lib/agent-office-snapshot.test.mjs
+      - scripts/lib/agent-office-smoke.mjs
+      - scripts/lib/agent-office-smoke.test.mjs
+      - scripts/lib/agent-office-workflow.test.mjs
+      - scripts/agent/release.mjs
+      - scripts/agent/gates.mjs
+      - functions/_lib/verifiedRequest.ts
+      - src/services/jiraAuth.ts
+      - src/services/accountStatus.ts
+      - src/services/jiraCors.ts
+      - .github/workflows/deploy-agent-office.yml
+  pull_request:
+    paths:
+      - agent-office/**
+      - scripts/agent-office-config.mjs
+      - scripts/agent-office-snapshot.mjs
+      - scripts/agent-office-smoke.mjs
+      - scripts/lib/agent-office.mjs
+      - scripts/lib/agent-office.test.mjs
+      - scripts/lib/agent-office-snapshot.mjs
+      - scripts/lib/agent-office-snapshot.test.mjs
+      - scripts/lib/agent-office-smoke.mjs
+      - scripts/lib/agent-office-smoke.test.mjs
+      - scripts/lib/agent-office-workflow.test.mjs
+      - scripts/agent/release.mjs
+      - scripts/agent/gates.mjs
+      - functions/_lib/verifiedRequest.ts
+      - src/services/jiraAuth.ts
+      - src/services/accountStatus.ts
+      - src/services/jiraCors.ts
+      - .github/workflows/deploy-agent-office.yml
+  issues:
+    types: [opened, labeled, unlabeled, closed, reopened]
+  workflow_run:
+    workflows: [Agent, Agent release, Agent sweep, Deploy production]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: production ships a sha that is already on staging; refresh rebuilds the snapshot on both environments without changing code.
+        required: true
+        type: choice
+        options: [production, refresh]
+      sha:
+        description: For production only, the full commit sha on main to ship. It must have a green push run of this workflow that published it to staging.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: The commit is on main and already on Agent Office staging
+    runs-on: ${{ (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && !startsWith(github.head_ref, 'agent/issue-') && github.event.pull_request.user.type != 'Bot')) && vars.RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.target == 'production'
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      sha: ${{ steps.check.outputs.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: 22.23.2 }
+      # Warns on battery and fails only when the power source cannot be read (owner 19 Oct 2026, docs/sdd/power-warn-only R1; docs/PITFALLS.md 6.114).
+      - name: The runner Mac power state (warns on battery)
+        run: node scripts/runner-power.mjs
+      - id: check
+        name: Refuse anything that did not go through this workflow and staging
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ inputs.sha }}
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "$SHA" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::'$SHA' is not a full 40 character lowercase commit sha."
+            exit 1
+          fi
+          status=$(gh api "repos/$REPO/compare/$SHA...main" --jq .status) \
+            || { echo "::error::$SHA is not a commit in this repository."; exit 1; }
+          if [ "$status" != "ahead" ] && [ "$status" != "identical" ]; then
+            echo "::error::$SHA is not on main (compare status: $status)."
+            exit 1
+          fi
+          run=$(gh api "repos/$REPO/actions/workflows/deploy-agent-office.yml/runs?head_sha=$SHA&branch=main&event=push&status=success&per_page=1" \
+                  --jq '.workflow_runs[0].id // empty')
+          if [ -z "$run" ]; then
+            echo "::error::No successful Deploy Agent Office run for a push of main at $SHA. Ship a commit that reached staging."
+            exit 1
+          fi
+          published=$(gh api "repos/$REPO/actions/runs/$run/jobs?per_page=100" \
+            --jq '[.jobs[] | select(.name == "Deploy Agent Office to staging") | .conclusion == "success" and any(.steps[]; .name == "Publish agent-office to agent-office-staging" and .conclusion == "success")] | any')
+          if [ "$published" != "true" ]; then
+            echo "::error::Run $run passed but did not publish $SHA to agent-office-staging."
+            exit 1
+          fi
+          echo "Run $run passed on $SHA and published it to agent-office-staging."
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+  tests:
+    name: Agent Office types and unit tests
+    runs-on: ${{ (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && !startsWith(github.head_ref, 'agent/issue-') && github.event.pull_request.user.type != 'Bot')) && vars.RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    needs: [verify]
+    if: >-
+      !cancelled()
+      && (github.event_name == 'push'
+          || github.event_name == 'pull_request'
+          || (github.event_name == 'workflow_dispatch' && inputs.target == 'production' && needs.verify.result == 'success'))
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.verify.outputs.sha || github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22.23.2
+          cache: ${{ vars.RUNNER == '' && 'npm' || '' }}
+          package-manager-cache: ${{ !vars.RUNNER }}
+      # Warns on battery and fails only when the power source cannot be read (owner 19 Oct 2026, docs/sdd/power-warn-only R1; docs/PITFALLS.md 6.114).
+      - name: The runner Mac power state (warns on battery)
+        run: node scripts/runner-power.mjs
+      - run: npm ci --ignore-scripts
+        timeout-minutes: 10
+      - name: Types, the snapshot middleware
+        run: node_modules/.bin/tsc --noEmit -p agent-office/functions/tsconfig.json
+      # The page's libraries, the middleware (with a signed fixture token), the snapshot, the config
+      # writer, the smoke and this workflow's own security test.
+      - name: Unit tests, the page logic, the middleware, the snapshot and this workflow
+        run: TZ=UTC node --test "agent-office/**/*.test.mjs" scripts/lib/agent-office.test.mjs scripts/lib/agent-office-snapshot.test.mjs scripts/lib/agent-office-smoke.test.mjs scripts/lib/agent-office-workflow.test.mjs
+
+  staging:
+    name: Deploy Agent Office to staging
+    runs-on: ${{ (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && !startsWith(github.head_ref, 'agent/issue-') && github.event.pull_request.user.type != 'Bot')) && vars.RUNNER || 'ubuntu-latest' }}
+    # 30 = the sum of every step's timeout-minutes (2 + 2 + 1 + 1 + 10 + 1 + 1 + 3 + 3 + 5 = 29) plus 1.
+    timeout-minutes: 30
+    needs: [tests]
+    # verify runs only on workflow_dispatch, so on a push it is skipped; !cancelled() keeps this job
+    # from inheriting that skip, and needs.tests.result keeps a red test a stop.
+    if: >-
+      !cancelled()
+      && needs.tests.result == 'success'
+      && github.event_name == 'push'
+      && github.ref == 'refs/heads/main'
+    environment: staging
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      actions: read
+      checks: read
+    concurrency:
+      group: agent-office-deploy-staging
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        timeout-minutes: 2
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        timeout-minutes: 2
+        with:
+          node-version: 22.23.2
+          cache: ${{ vars.RUNNER == '' && 'npm' || '' }}
+          package-manager-cache: ${{ !vars.RUNNER }}
+      # Warns on battery and fails only when the power source cannot be read (owner 19 Oct 2026, docs/sdd/power-warn-only R1; docs/PITFALLS.md 6.114).
+      - name: The runner Mac power state (warns on battery)
+        timeout-minutes: 1
+        run: node scripts/runner-power.mjs
+      # Security audit finding 7 (30 Sep 2026): this job holds the Cloudflare token, so npm reads and
+      # writes a cache of this job's own, never the ~/.npm other jobs share.
+      - name: npm uses a cache of this job's own
+        timeout-minutes: 1
+        run: echo "npm_config_cache=$RUNNER_TEMP/npm-cache" >> "$GITHUB_ENV"
+      - run: npm ci --ignore-scripts
+        timeout-minutes: 10
+      - name: The Cloudflare credential is configured
+        timeout-minutes: 1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_STAGING }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=""
+          [ -z "$CLOUDFLARE_API_TOKEN" ] && missing="$missing CLOUDFLARE_API_TOKEN_STAGING(secret of the environment staging)"
+          [ -z "$CLOUDFLARE_ACCOUNT_ID" ] && missing="$missing CLOUDFLARE_ACCOUNT_ID(repository variable)"
+          if [ -n "$missing" ]; then
+            echo "::error::The Agent Office cannot be deployed to staging. Not configured:$missing"
+            exit 1
+          fi
+      - name: Write wrangler.toml, version.txt and app/env.json (R48a) for staging
+        timeout-minutes: 1
+        env:
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+        run: node scripts/agent-office-config.mjs staging "$GITHUB_SHA"
+      - name: Build the board snapshot from GitHub
+        timeout-minutes: 3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AGENT_ENABLED: ${{ vars.AGENT_ENABLED }}
+          AGENT_APP_LOGIN: ${{ vars.AGENT_APP_SLUG }}[bot]
+          CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_TOKEN_STAGING }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          AGENT_OFFICE_PROJECT: agent-office-staging
+          # ols-real R13: the OLS cards the Mac sets; data only, validated by the snapshot (E4)
+          OLS_BOARD: ${{ vars.OLS_BOARD }}
+        run: node scripts/agent-office-snapshot.mjs
+      - name: Publish agent-office to agent-office-staging
+        timeout-minutes: 3
+        id: publish
+        working-directory: agent-office
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_STAGING }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: 'false'
+        run: |
+          set -euo pipefail
+          out=$("$GITHUB_WORKSPACE/node_modules/.bin/wrangler" pages deploy --project-name agent-office-staging --branch main --commit-hash "$GITHUB_SHA" 2>&1) || { printf '%s\n' "$out"; exit 1; }
+          printf '%s\n' "$out"
+          url=$(printf '%s' "$out" | grep -Eo 'https://[a-z0-9]+\.agent-office-staging\.pages\.dev' | head -1)
+          if [ -z "$url" ]; then echo "::error::wrangler did not print the deployment URL."; exit 1; fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: The deployment serves its sha and refuses what it must
+        timeout-minutes: 5
+        env:
+          DEPLOY_URL: ${{ steps.publish.outputs.url }}
+        run: node scripts/agent-office-smoke.mjs "$DEPLOY_URL" "$GITHUB_SHA"
+
+  production:
+    name: Deploy Agent Office to production
+    runs-on: ${{ (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && !startsWith(github.head_ref, 'agent/issue-') && github.event.pull_request.user.type != 'Bot')) && vars.RUNNER || 'ubuntu-latest' }}
+    # 32 = the sum of every step's timeout-minutes (2 + 2 + 2 + 1 + 1 + 10 + 1 + 1 + 3 + 3 + 5 = 31) plus 1.
+    timeout-minutes: 32
+    needs: [verify, tests]
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.target == 'production' && needs.verify.result == 'success' && needs.tests.result == 'success'
+    environment: production
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      actions: read
+      checks: read
+    concurrency:
+      group: agent-office-deploy-production
+      cancel-in-progress: false
+    steps:
+      # The sha verify approved. Only what it publishes runs from this checkout: npm ci, the config
+      # writer, the snapshot and the smoke that judges what this target serves.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        timeout-minutes: 2
+        with:
+          ref: ${{ needs.verify.outputs.sha }}
+      # Main's own copy of the ops guard, after the target checkout, which cleans the workspace
+      # (docs/PITFALLS.md 6.152, as in deploy-jira-proxy.yml). Nothing under ops/ is published.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        timeout-minutes: 2
+        with:
+          path: ops
+          sparse-checkout: scripts
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        timeout-minutes: 2
+        with:
+          node-version: 22.23.2
+          cache: ${{ vars.RUNNER == '' && 'npm' || '' }}
+          package-manager-cache: ${{ !vars.RUNNER }}
+      # Warns on battery and fails only when the power source cannot be read (owner 19 Oct 2026, docs/sdd/power-warn-only R1; docs/PITFALLS.md 6.114).
+      - name: The runner Mac power state (warns on battery)
+        timeout-minutes: 1
+        run: node ops/scripts/runner-power.mjs
+      - name: npm uses a cache of this job's own
+        timeout-minutes: 1
+        run: echo "npm_config_cache=$RUNNER_TEMP/npm-cache" >> "$GITHUB_ENV"
+      - run: npm ci --ignore-scripts
+        timeout-minutes: 10
+      - name: The Cloudflare credential is configured
+        timeout-minutes: 1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_PROD }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=""
+          [ -z "$CLOUDFLARE_API_TOKEN" ] && missing="$missing CLOUDFLARE_API_TOKEN_PROD(secret of the environment production)"
+          [ -z "$CLOUDFLARE_ACCOUNT_ID" ] && missing="$missing CLOUDFLARE_ACCOUNT_ID(repository variable)"
+          if [ -n "$missing" ]; then
+            echo "::error::The Agent Office cannot be deployed to production. Not configured:$missing"
+            exit 1
+          fi
+      - name: Write wrangler.toml, version.txt and app/env.json (R48a) for production
+        timeout-minutes: 1
+        env:
+          SHA: ${{ needs.verify.outputs.sha }}
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+        run: node scripts/agent-office-config.mjs prod "$SHA"
+      - name: Build the board snapshot from GitHub
+        timeout-minutes: 3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AGENT_ENABLED: ${{ vars.AGENT_ENABLED }}
+          AGENT_APP_LOGIN: ${{ vars.AGENT_APP_SLUG }}[bot]
+          CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_TOKEN_PROD }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          AGENT_OFFICE_PROJECT: agent-office-prod
+          # ols-real R13: the OLS cards the Mac sets; data only, validated by the snapshot (E4)
+          OLS_BOARD: ${{ vars.OLS_BOARD }}
+        run: node scripts/agent-office-snapshot.mjs
+      - name: Publish agent-office to agent-office-prod
+        timeout-minutes: 3
+        id: publish
+        working-directory: agent-office
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_PROD }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: 'false'
+          SHA: ${{ needs.verify.outputs.sha }}
+        run: |
+          set -euo pipefail
+          out=$("$GITHUB_WORKSPACE/node_modules/.bin/wrangler" pages deploy --project-name agent-office-prod --branch main --commit-hash "$SHA" 2>&1) || { printf '%s\n' "$out"; exit 1; }
+          printf '%s\n' "$out"
+          url=$(printf '%s' "$out" | grep -Eo 'https://[a-z0-9]+\.agent-office-prod\.pages\.dev' | head -1)
+          if [ -z "$url" ]; then echo "::error::wrangler did not print the deployment URL."; exit 1; fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: The deployment serves its sha and refuses what it must
+        timeout-minutes: 5
+        env:
+          DEPLOY_URL: ${{ steps.publish.outputs.url }}
+          SHA: ${{ needs.verify.outputs.sha }}
+        run: node scripts/agent-office-smoke.mjs "$DEPLOY_URL" "$SHA"
+
+  refresh-staging:
+    name: Refresh the Agent Office snapshot on staging
+    runs-on: ${{ (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && !startsWith(github.head_ref, 'agent/issue-') && github.event.pull_request.user.type != 'Bot')) && vars.RUNNER || 'ubuntu-latest' }}
+    # 34 = the sum of every step's timeout-minutes (2 + 2 + 1 + 1 + 2 + 1 + 10 + 1 + 1 + 3 + 1 + 3 + 5 = 33) plus 1.
+    timeout-minutes: 34
+    if: >-
+      github.ref == 'refs/heads/main'
+      && ((github.event_name == 'issues'
+           && (github.event.action == 'opened' || github.event.action == 'closed' || github.event.action == 'reopened'
+               || startsWith(github.event.label.name, 'agent:') || startsWith(github.event.label.name, 'release:')))
+          || github.event_name == 'workflow_run'
+          || (github.event_name == 'workflow_dispatch' && inputs.target == 'refresh'))
+    environment: staging
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      actions: read
+      checks: read
+    concurrency:
+      group: agent-office-refresh-staging
+      cancel-in-progress: false
+    steps:
+      # Main's own copy of the ops guard first: the served commit is checked out at site/, which
+      # leaves ops/ in place.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        timeout-minutes: 2
+        with:
+          path: ops
+          sparse-checkout: scripts
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        timeout-minutes: 2
+        with:
+          node-version: 22.23.2
+          cache: ${{ vars.RUNNER == '' && 'npm' || '' }}
+          package-manager-cache: ${{ !vars.RUNNER }}
+      # Warns on battery and fails only when the power source cannot be read (owner 19 Oct 2026, docs/sdd/power-warn-only R1; docs/PITFALLS.md 6.114).
+      - name: The runner Mac power state (warns on battery)
+        timeout-minutes: 1
+        run: node ops/scripts/runner-power.mjs
+      # R65: the commit staging serves, from its own version.txt. Never deployed yet means nothing to
+      # refresh; any other answer than 200 or 404 is red.
+      - name: Read the sha staging serves
+        id: serving
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
+          code=$(curl -sS --max-time 20 -o "$RUNNER_TEMP/served.txt" -w '%{http_code}' https://agent-office-staging.pages.dev/version.txt)
+          if [ "$code" = "404" ]; then
+            echo "::notice::agent-office-staging has no version.txt yet, so there is no deployment to refresh."
+            exit 0
+          fi
+          if [ "$code" != "200" ]; then echo "::error::agent-office-staging answered $code for version.txt."; exit 1; fi
+          sha=$(tr -d '\n' < "$RUNNER_TEMP/served.txt")
+          if ! printf '%s' "$sha" | grep -Eq '^[0-9a-f]{40}$'; then echo "::error::version.txt on agent-office-staging is not a full sha."; exit 1; fi
+          echo "Staging serves $sha."
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      # R65, R46 (review finding N1): version.txt is public content, so the sha it names is checked
+      # to be on main, as the verify job checks a typed sha, before that commit's code is checked out
+      # and run beside the Cloudflare token. This step holds only the job's read-only token.
+      - name: The served sha is on main
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 1
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ steps.serving.outputs.sha }}
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "$SHA" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::'$SHA' is not a full 40 character lowercase commit sha. Nothing is published."
+            exit 1
+          fi
+          status=$(gh api "repos/$REPO/compare/$SHA...main" --jq .status) \
+            || { echo "::error::$SHA is not a commit in this repository. Nothing is published."; exit 1; }
+          if [ "$status" != "ahead" ] && [ "$status" != "identical" ]; then
+            echo "::error::$SHA is not on main (compare status: $status). Nothing is published."
+            exit 1
+          fi
+          echo "$SHA is on main ($status)."
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 2
+        with:
+          ref: ${{ steps.serving.outputs.sha }}
+          path: site
+          persist-credentials: false
+      - name: npm uses a cache of this job's own
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 1
+        run: echo "npm_config_cache=$RUNNER_TEMP/npm-cache" >> "$GITHUB_ENV"
+      - run: npm ci --ignore-scripts
+        if: steps.serving.outputs.sha != ''
+        working-directory: site
+        timeout-minutes: 10
+      - name: The Cloudflare credential is configured
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_STAGING }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=""
+          [ -z "$CLOUDFLARE_API_TOKEN" ] && missing="$missing CLOUDFLARE_API_TOKEN_STAGING(secret of the environment staging)"
+          [ -z "$CLOUDFLARE_ACCOUNT_ID" ] && missing="$missing CLOUDFLARE_ACCOUNT_ID(repository variable)"
+          if [ -n "$missing" ]; then
+            echo "::error::The Agent Office snapshot cannot be refreshed on staging. Not configured:$missing"
+            exit 1
+          fi
+      - name: Write wrangler.toml, version.txt and app/env.json (R48a) for staging
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 1
+        working-directory: site
+        env:
+          SHA: ${{ steps.serving.outputs.sha }}
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+        run: node scripts/agent-office-config.mjs staging "$SHA"
+      - name: Build the board snapshot from GitHub
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 3
+        working-directory: site
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AGENT_ENABLED: ${{ vars.AGENT_ENABLED }}
+          AGENT_APP_LOGIN: ${{ vars.AGENT_APP_SLUG }}[bot]
+          CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_TOKEN_STAGING }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          AGENT_OFFICE_PROJECT: agent-office-staging
+          # ols-real R13: the OLS cards the Mac sets; data only, validated by the snapshot (E4)
+          OLS_BOARD: ${{ vars.OLS_BOARD }}
+        run: node scripts/agent-office-snapshot.mjs
+      # R46: a code deploy of this workflow owns the environment while it is queued or running, and
+      # a version.txt that moved means one just finished; either way this refresh publishes nothing.
+      - name: Nothing newer is deploying
+        id: fresh
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 1
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          SERVED: ${{ steps.serving.outputs.sha }}
+        run: |
+          set -euo pipefail
+          for st in queued in_progress waiting; do
+            n=$(gh api "repos/$REPO/actions/workflows/deploy-agent-office.yml/runs?status=$st&per_page=100" \
+                  --jq "[.workflow_runs[] | select(.id != $RUN_ID and (.event == \"push\" or .event == \"workflow_dispatch\"))] | length")
+            if [ "$n" != "0" ]; then
+              echo "::notice::A deploy of this workflow is $st, so this refresh publishes nothing; that deploy carries its own snapshot."
+              echo "go=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          now=$(curl -fsS --max-time 20 https://agent-office-staging.pages.dev/version.txt | tr -d '\n')
+          if [ "$now" != "$SERVED" ]; then
+            echo "::notice::Staging moved from $SERVED to $now while this refresh ran, so it publishes nothing."
+            echo "go=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "go=true" >> "$GITHUB_OUTPUT"
+      - name: Publish agent-office to agent-office-staging
+        if: steps.fresh.outputs.go == 'true'
+        timeout-minutes: 3
+        id: publish
+        working-directory: site/agent-office
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_STAGING }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: 'false'
+          SHA: ${{ steps.serving.outputs.sha }}
+        run: |
+          set -euo pipefail
+          out=$("$GITHUB_WORKSPACE/site/node_modules/.bin/wrangler" pages deploy --project-name agent-office-staging --branch main --commit-hash "$SHA" 2>&1) || { printf '%s\n' "$out"; exit 1; }
+          printf '%s\n' "$out"
+          url=$(printf '%s' "$out" | grep -Eo 'https://[a-z0-9]+\.agent-office-staging\.pages\.dev' | head -1)
+          if [ -z "$url" ]; then echo "::error::wrangler did not print the deployment URL."; exit 1; fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: The deployment serves its sha and refuses what it must
+        if: steps.fresh.outputs.go == 'true'
+        timeout-minutes: 5
+        working-directory: site
+        env:
+          DEPLOY_URL: ${{ steps.publish.outputs.url }}
+          SHA: ${{ steps.serving.outputs.sha }}
+        run: node scripts/agent-office-smoke.mjs "$DEPLOY_URL" "$SHA"
+
+  refresh-production:
+    name: Refresh the Agent Office snapshot on production
+    runs-on: ${{ (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && !startsWith(github.head_ref, 'agent/issue-') && github.event.pull_request.user.type != 'Bot')) && vars.RUNNER || 'ubuntu-latest' }}
+    # 34 = the sum of every step's timeout-minutes (33, as in refresh-staging) plus 1.
+    timeout-minutes: 34
+    if: >-
+      github.ref == 'refs/heads/main'
+      && ((github.event_name == 'issues'
+           && (github.event.action == 'opened' || github.event.action == 'closed' || github.event.action == 'reopened'
+               || startsWith(github.event.label.name, 'agent:') || startsWith(github.event.label.name, 'release:')))
+          || github.event_name == 'workflow_run'
+          || (github.event_name == 'workflow_dispatch' && inputs.target == 'refresh'))
+    environment: production
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      actions: read
+      checks: read
+    concurrency:
+      group: agent-office-refresh-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        timeout-minutes: 2
+        with:
+          path: ops
+          sparse-checkout: scripts
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        timeout-minutes: 2
+        with:
+          node-version: 22.23.2
+          cache: ${{ vars.RUNNER == '' && 'npm' || '' }}
+          package-manager-cache: ${{ !vars.RUNNER }}
+      # Warns on battery and fails only when the power source cannot be read (owner 19 Oct 2026, docs/sdd/power-warn-only R1; docs/PITFALLS.md 6.114).
+      - name: The runner Mac power state (warns on battery)
+        timeout-minutes: 1
+        run: node ops/scripts/runner-power.mjs
+      - name: Read the sha production serves
+        id: serving
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
+          code=$(curl -sS --max-time 20 -o "$RUNNER_TEMP/served.txt" -w '%{http_code}' https://agent-office-prod.pages.dev/version.txt)
+          if [ "$code" = "404" ]; then
+            echo "::notice::agent-office-prod has no version.txt yet, so there is no deployment to refresh."
+            exit 0
+          fi
+          if [ "$code" != "200" ]; then echo "::error::agent-office-prod answered $code for version.txt."; exit 1; fi
+          sha=$(tr -d '\n' < "$RUNNER_TEMP/served.txt")
+          if ! printf '%s' "$sha" | grep -Eq '^[0-9a-f]{40}$'; then echo "::error::version.txt on agent-office-prod is not a full sha."; exit 1; fi
+          echo "Production serves $sha."
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      # R65, R46 (review finding N1): version.txt is public content, so the sha it names is checked
+      # to be on main, as the verify job checks a typed sha, before that commit's code is checked out
+      # and run beside the Cloudflare token. This step holds only the job's read-only token.
+      - name: The served sha is on main
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 1
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ steps.serving.outputs.sha }}
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "$SHA" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::'$SHA' is not a full 40 character lowercase commit sha. Nothing is published."
+            exit 1
+          fi
+          status=$(gh api "repos/$REPO/compare/$SHA...main" --jq .status) \
+            || { echo "::error::$SHA is not a commit in this repository. Nothing is published."; exit 1; }
+          if [ "$status" != "ahead" ] && [ "$status" != "identical" ]; then
+            echo "::error::$SHA is not on main (compare status: $status). Nothing is published."
+            exit 1
+          fi
+          echo "$SHA is on main ($status)."
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 2
+        with:
+          ref: ${{ steps.serving.outputs.sha }}
+          path: site
+          persist-credentials: false
+      - name: npm uses a cache of this job's own
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 1
+        run: echo "npm_config_cache=$RUNNER_TEMP/npm-cache" >> "$GITHUB_ENV"
+      - run: npm ci --ignore-scripts
+        if: steps.serving.outputs.sha != ''
+        working-directory: site
+        timeout-minutes: 10
+      - name: The Cloudflare credential is configured
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_PROD }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=""
+          [ -z "$CLOUDFLARE_API_TOKEN" ] && missing="$missing CLOUDFLARE_API_TOKEN_PROD(secret of the environment production)"
+          [ -z "$CLOUDFLARE_ACCOUNT_ID" ] && missing="$missing CLOUDFLARE_ACCOUNT_ID(repository variable)"
+          if [ -n "$missing" ]; then
+            echo "::error::The Agent Office snapshot cannot be refreshed on production. Not configured:$missing"
+            exit 1
+          fi
+      - name: Write wrangler.toml, version.txt and app/env.json (R48a) for production
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 1
+        working-directory: site
+        env:
+          SHA: ${{ steps.serving.outputs.sha }}
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+        run: node scripts/agent-office-config.mjs prod "$SHA"
+      - name: Build the board snapshot from GitHub
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 3
+        working-directory: site
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AGENT_ENABLED: ${{ vars.AGENT_ENABLED }}
+          AGENT_APP_LOGIN: ${{ vars.AGENT_APP_SLUG }}[bot]
+          CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_TOKEN_PROD }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          AGENT_OFFICE_PROJECT: agent-office-prod
+          # ols-real R13: the OLS cards the Mac sets; data only, validated by the snapshot (E4)
+          OLS_BOARD: ${{ vars.OLS_BOARD }}
+        run: node scripts/agent-office-snapshot.mjs
+      - name: Nothing newer is deploying
+        id: fresh
+        if: steps.serving.outputs.sha != ''
+        timeout-minutes: 1
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          SERVED: ${{ steps.serving.outputs.sha }}
+        run: |
+          set -euo pipefail
+          for st in queued in_progress waiting; do
+            n=$(gh api "repos/$REPO/actions/workflows/deploy-agent-office.yml/runs?status=$st&per_page=100" \
+                  --jq "[.workflow_runs[] | select(.id != $RUN_ID and .event == \"workflow_dispatch\")] | length")
+            if [ "$n" != "0" ]; then
+              echo "::notice::A dispatch of this workflow is $st, so this refresh publishes nothing; a production deploy carries its own snapshot."
+              echo "go=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          now=$(curl -fsS --max-time 20 https://agent-office-prod.pages.dev/version.txt | tr -d '\n')
+          if [ "$now" != "$SERVED" ]; then
+            echo "::notice::Production moved from $SERVED to $now while this refresh ran, so it publishes nothing."
+            echo "go=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "go=true" >> "$GITHUB_OUTPUT"
+      - name: Publish agent-office to agent-office-prod
+        if: steps.fresh.outputs.go == 'true'
+        timeout-minutes: 3
+        id: publish
+        working-directory: site/agent-office
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_PROD }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: 'false'
+          SHA: ${{ steps.serving.outputs.sha }}
+        run: |
+          set -euo pipefail
+          out=$("$GITHUB_WORKSPACE/site/node_modules/.bin/wrangler" pages deploy --project-name agent-office-prod --branch main --commit-hash "$SHA" 2>&1) || { printf '%s\n' "$out"; exit 1; }
+          printf '%s\n' "$out"
+          url=$(printf '%s' "$out" | grep -Eo 'https://[a-z0-9]+\.agent-office-prod\.pages\.dev' | head -1)
+          if [ -z "$url" ]; then echo "::error::wrangler did not print the deployment URL."; exit 1; fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: The deployment serves its sha and refuses what it must
+        if: steps.fresh.outputs.go == 'true'
+        timeout-minutes: 5
+        working-directory: site
+        env:
+          DEPLOY_URL: ${{ steps.publish.outputs.url }}
+          SHA: ${{ steps.serving.outputs.sha }}
+        run: node scripts/agent-office-smoke.mjs "$DEPLOY_URL" "$SHA"

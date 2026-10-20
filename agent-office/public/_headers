@@ -1,0 +1,6 @@
+# Generated with index.html (review B3). Every inline block of index.html is listed by its sha256; a change to one
+# changes its hash, and agent-office/page.test.mjs fails until this file is rebuilt.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-leX/dwvOtDBgIZSts7lPeV+0m49Njhb8lTry/c9RfCY=' 'sha256-MAeQxgUjibFpKPLRe8QhniR8mtcsJzSqqw39rrUILoQ=' 'wasm-unsafe-eval' https://apis.google.com; style-src 'self' 'sha256-SUBaStK4DHvc1bUUG/V8pUuIZ20ZhySI1WR01cAh84w=' 'sha256-ePNKigsNw7W3o5tHLmy0PT7UvtjoqVgsxTPtDXvl9Io=' 'sha256-ZzNZWxchta5XJKj6ZmaU3WVxESw77gVZjTYu6W4UcTA=' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'self' blob: https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://open.er-api.com; frame-src https://taskfolio-staging.firebaseapp.com https://taskfolio-prod.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

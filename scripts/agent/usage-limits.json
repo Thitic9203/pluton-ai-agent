@@ -1,0 +1,5 @@
+{
+  "tokensPerStep": 29100000,
+  "costUsdPerStep": 582,
+  "source": "docs/sdd/agent-office-live/spec.md R59 ceilings: tokensPerStep is the largest whole-issue budget of R60 (XL 29.1M tokens, Plan B section 2), since one step above a whole XL issue is not plausible; costUsdPerStep is those tokens at the highest per-token price of the config rate card (output, USD 20 per 1M, plan.md config prices): 29.1 x 20 = 582. Lane L4, 16 Oct 2026 (security review of ca701944d, N1); owner may overrule by pull request."
+}

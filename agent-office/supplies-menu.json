@@ -1,0 +1,3483 @@
+{
+ "version": 1,
+ "credit": {
+  "text": "เมนูจาก The Sims 4 (Sims Wiki, CC BY-SA)",
+  "licence": "CC BY-SA 3.0",
+  "fetched": "2026-10-16",
+  "urls": [
+   "https://sims.fandom.com/wiki/Cooking_(The_Sims_4)",
+   "https://sims.fandom.com/wiki/Mixology_(The_Sims_4)",
+   "https://sims.fandom.com/wiki/Juice_fizzing",
+   "https://sims.fandom.com/wiki/Nectar_making",
+   "https://sims.fandom.com/wiki/Ice_cream_maker",
+   "https://sims.fandom.com/wiki/Vending_machine",
+   "https://sims.fandom.com/wiki/Coffeemaker"
+  ]
+ },
+ "priceLink": {
+  "text": "ราคาอ้างอิงบางรายการจาก Numbeo",
+  "url": "https://www.numbeo.com/cost-of-living/in/Bangkok?displayCurrency=THB",
+  "why": "Numbeo terms of use require a link back (https://www.numbeo.com/common/terms_of_use.jsp); the owner accepted the terms risk, 17 Oct 2026"
+ },
+ "mapping": {
+  "source": "owner, 17 Oct 2026; research file sims-menu.md (groups by a keyword heuristic over the name and wiki section)",
+  "alcohol": [
+   "wine: nectar|\\bnect\\b|grappo|meloire|avornalino|nuala (Sims nectar and named vintages are wine)",
+   "beer: brew|firkin|barley|\\beapa\\b|\\bale\\b|beer (brews, firkins and ales are beer)",
+   "mocktail: virgin|kava|party extender|\\btea\\b (virgin, kava, tea and the party fountain are alcohol free)",
+   "spirits: omazake|\\bsap\\b|wutaheftabir (served neat)",
+   "cocktail: every other bar drink"
+  ]
+ },
+ "prices": {
+  "meal": {
+   "value": 100,
+   "unit": "THB per meal",
+   "item": "Meal at an Inexpensive Restaurant (range 60-250)",
+   "url": "https://www.numbeo.com/cost-of-living/in/Bangkok?displayCurrency=THB",
+   "fetched": "2026-10-17",
+   "sourceDate": "2026-10-15",
+   "source": "Numbeo, Cost of Living in Bangkok (\"Last update: 15 October 2026\")"
+  },
+  "bread": {
+   "value": 50.36,
+   "unit": "THB per 500 g loaf",
+   "item": "Fresh White Bread (500 g)",
+   "url": "https://www.numbeo.com/cost-of-living/in/Bangkok?displayCurrency=THB",
+   "fetched": "2026-10-17",
+   "sourceDate": "2026-10-15",
+   "source": "Numbeo, Cost of Living in Bangkok (\"Last update: 15 October 2026\")"
+  },
+  "coffee": {
+   "value": 92.69,
+   "unit": "THB per cup",
+   "item": "Cappuccino (regular)",
+   "url": "https://www.numbeo.com/cost-of-living/in/Bangkok?displayCurrency=THB",
+   "fetched": "2026-10-17",
+   "sourceDate": "2026-10-15",
+   "source": "Numbeo, Cost of Living in Bangkok (\"Last update: 15 October 2026\")"
+  },
+  "milk": {
+   "value": 63.73,
+   "unit": "THB per litre",
+   "item": "Milk (regular), 1 L",
+   "url": "https://www.numbeo.com/cost-of-living/in/Bangkok?displayCurrency=THB",
+   "fetched": "2026-10-17",
+   "sourceDate": "2026-10-15",
+   "source": "Numbeo, Cost of Living in Bangkok (\"Last update: 15 October 2026\")"
+  },
+  "softDrink": {
+   "value": 21.92,
+   "unit": "THB per 0.33 L",
+   "item": "Coca-Cola or Pepsi (0.33 L bottle)",
+   "url": "https://www.numbeo.com/cost-of-living/in/Bangkok?displayCurrency=THB",
+   "fetched": "2026-10-17",
+   "sourceDate": "2026-10-15",
+   "source": "Numbeo, Cost of Living in Bangkok (\"Last update: 15 October 2026\")"
+  },
+  "water": {
+   "value": 11.73,
+   "unit": "THB per 0.33 L",
+   "item": "Bottled Water (0.33 L), restaurant",
+   "url": "https://www.numbeo.com/cost-of-living/in/Bangkok?displayCurrency=THB",
+   "fetched": "2026-10-17",
+   "sourceDate": "2026-10-15",
+   "source": "Numbeo, Cost of Living in Bangkok (\"Last update: 15 October 2026\")"
+  },
+  "beer": {
+   "value": 90,
+   "unit": "THB per 0.5 L",
+   "item": "Domestic Draft Beer (0.5 L)",
+   "url": "https://www.numbeo.com/cost-of-living/in/Bangkok?displayCurrency=THB",
+   "fetched": "2026-10-17",
+   "sourceDate": "2026-10-15",
+   "source": "Numbeo, Cost of Living in Bangkok (\"Last update: 15 October 2026\")"
+  },
+  "wine": {
+   "value": 500,
+   "unit": "THB per bottle",
+   "item": "Bottle of Wine (Mid-Range), market",
+   "url": "https://www.numbeo.com/cost-of-living/in/Bangkok?displayCurrency=THB",
+   "fetched": "2026-10-17",
+   "sourceDate": "2026-10-15",
+   "source": "Numbeo, Cost of Living in Bangkok (\"Last update: 15 October 2026\")"
+  },
+  "snack": {
+   "value": 135,
+   "unit": "THB per item",
+   "item": "Big Mac, Thailand local_price",
+   "url": "https://github.com/TheEconomist/big-mac-data/blob/master/output-data/big-mac-full-index.csv",
+   "fetched": "2026-10-17",
+   "sourceDate": "2026-07-01",
+   "source": "The Economist Big Mac index (THA row dated 2026-07-01)"
+  },
+  "bakeryDessert": {
+   "value": 85,
+   "unit": "THB per serving",
+   "item": "Butter Croissant",
+   "url": "https://www.starbucks.co.th/en/menu/",
+   "fetched": "2026-10-17",
+   "source": "Starbucks Thailand official menu, \"All stores (except airports and tourist areas)\""
+  },
+  "iceCream": {
+   "value": 160,
+   "unit": "THB per serving",
+   "item": "Affogato, Tall (espresso over vanilla ice cream)",
+   "url": "https://www.starbucks.co.th/en/menu/",
+   "fetched": "2026-10-17",
+   "source": "Starbucks Thailand official menu, \"All stores (except airports and tourist areas)\""
+  },
+  "tea": {
+   "value": 150,
+   "unit": "THB per serving",
+   "item": "Green Tea Latte, Tall",
+   "url": "https://www.starbucks.co.th/en/menu/",
+   "fetched": "2026-10-17",
+   "source": "Starbucks Thailand official menu, \"All stores (except airports and tourist areas)\""
+  },
+  "juice": {
+   "value": 100,
+   "unit": "THB per serving",
+   "item": "Valencia Orange Juice 100%",
+   "url": "https://www.starbucks.co.th/en/menu/",
+   "fetched": "2026-10-17",
+   "source": "Starbucks Thailand official menu, \"All stores (except airports and tourist areas)\""
+  },
+  "mocktail": {
+   "value": 170,
+   "unit": "THB per serving",
+   "item": "Sunset (hibiscus tea, orange juice, soda)",
+   "url": "https://www.starbucks.co.th/en/menu/",
+   "fetched": "2026-10-17",
+   "source": "Starbucks Thailand official menu, \"All stores (except airports and tourist areas)\""
+  },
+  "fruit": {
+   "value": 7.06,
+   "unit": "THB per serving (one medium banana)",
+   "item": "Bananas (1 kg) 59.82 THB × 0.118 kg",
+   "formula": "59.82 × 0.118 = 7.06",
+   "url": "https://www.numbeo.com/cost-of-living/in/Bangkok?displayCurrency=THB",
+   "urls": [
+    "https://www.numbeo.com/cost-of-living/in/Bangkok?displayCurrency=THB",
+    "https://fdc.nal.usda.gov/food-details/173944/portions"
+   ],
+   "fetched": "2026-10-17",
+   "sourceDate": "2026-10-15",
+   "source": "Numbeo Bangkok Bananas (1 kg); USDA FoodData Central \"Bananas, raw\" FDC 173944, 1 medium = 118 g"
+  },
+  "cocktail": {
+   "value": 390,
+   "unit": "THB per glass, before 7% VAT and 10% service",
+   "item": "Mojito / Margarita",
+   "url": "https://www.anantara.com/uploads/minor/anantara/documents/anantara-siam-hotel/dining/manohra-cruises/2024-menu-and-brochure/anantara_siam_bangkok_manohra_beverage_menu_010424.pdf",
+   "fetched": "2026-10-17",
+   "sourceDate": "2024-03-08",
+   "source": "Anantara Siam Bangkok, Manohra beverage menu (PDF dated 8 Mar 2024)"
+  },
+  "spirits": {
+   "value": 280,
+   "unit": "THB per serving, before 7% VAT and 10% service",
+   "item": "Ketel One vodka / Sierra Gold tequila, neat",
+   "url": "https://www.centarahotelsresorts.com/centaragrand/centaragrand/centaragrand/es/media/14721/download?attachment",
+   "fetched": "2026-10-17",
+   "sourceDate": "2020-06-24",
+   "source": "Centara Grand drink list (PDF dated 24 Jun 2020)"
+  }
+ },
+ "items": [
+  {
+   "name": "Apple Bacon Waffles",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Arepa Rellena con Perico",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Baleada",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Banana Split Waffles",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Berry Waffles",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Breakfast Scramble",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Chicken and Waffles",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Cubed Ahi with Veggie Wasabi Matrix",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Cured Fish Waffles",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Egg Ramen",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Egg Rolls",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Eggs Benedict",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Empanadas de Verde",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Golden Omelet",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Golden Scrambled Eggs and Bacon",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Grand Breakfast",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Heart's Desire Waffles",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Jungle Moss Egg with Lavender Wisps",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Mushroom Waffles",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Obsidian Omelet",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Obsidian Scrambled Eggs and bacon",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Omelet",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Plain Waffles",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Platanos Fritos",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pleasantly-Unpleasant Waffles",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pumpkin Spice Waffles",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Saffron Waffles",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Scrambled Eggs With Bacon",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Space Taco with Pearled Egg Core",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Spinach Frittata",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Spinach Wrapped Veggie Burrito",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tomato Wrapped Veggie Burrito",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tortilla Wrapped Veggie Dog",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Veggie Burger",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Veggie Dog",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Veggie Pizza Rollup",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Veggie Sliders",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Veggie Yakisoba",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Yogurt Melts",
+   "group": "breakfast",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Acarajé",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Ambrosia",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Angry Flaming Spaghetti",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Arepa de Pabellòn",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Artful Focaccia",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Artisan Fish Trio",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Asado",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Aubergine Parmesan",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Baked Alaska",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Baked Potato",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Bangers and Mash",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Banh Cuon",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Banh Mi",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Banh Xeo",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "BBQ Ribs Plate",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Bean and Cheese Burrito",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Beef Ramen",
+   "group": "lunch/dinner",
+   "category": "noodles (instant noodle / noodle dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Beef Wellington",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Beef Yakisoba",
+   "group": "lunch/dinner",
+   "category": "noodles (instant noodle / noodle dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Beetles",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Bhel Puri",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Bibingka",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Bison Stew",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Black 5 Burger",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Blackened Bass",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "BLT",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "BLT Sandwich",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Blue Steak",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Blueberry Jam Crumpets",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Boiling Death Frog Hot Pot",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Boiling Frog Hot Pot",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Bombardier Beetle Stir-Fry",
+   "group": "lunch/dinner",
+   "category": "single-dish meal (rice dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Brigadeiro",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Brochette",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Butter Chicken",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Buttered Jam Crumpets",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Butternut Gnocchi",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Butternut Squash Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Butterscotchman",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Buñuelos",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Caesar Salad",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Camper's Stew",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Campers Stew",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Canadian Bacon Pizza",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Caprese Salad",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Challah",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Charming Mushroom Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Cheese",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Cheese Eyeballs",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Cheese Pizza",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Cheese Pizza Slice",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Chicken Burrito",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Chicken Saltimbocca",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Chicken Stir Fry",
+   "group": "lunch/dinner",
+   "category": "single-dish meal (rice dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Chicken Teriyaki Pizza Slice",
+   "group": "lunch/dinner",
+   "category": "single-dish meal (rice dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Chili",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Chimis",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Choripanes",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Churrasco",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Cioppino",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Clam Chowder",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Classic Vanilla",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Coconut Rice",
+   "group": "lunch/dinner",
+   "category": "single-dish meal (rice dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Corndog",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Crab Linguine",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Cricket Meal",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Crown Roast",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Crystallized Coco Blocks",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Curanto",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Cured Meat Crisps on Reclaimed Forest Wood",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Curious Pizza",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Curry",
+   "group": "lunch/dinner",
+   "category": "single-dish meal (rice dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Dango",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Egusi Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Elotes",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Empanadas",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Ensaymadas",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Faux Bacon-Wrapped Asparagus",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Faux BLT",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Faux Lobster Tortellini",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Faux Meat and Mash",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Faux Meat Bowl",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Faux Meat Butter Chicken",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Faux Meat Casserole",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Faux Meat Protein Plate",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Faux Meat Wellington",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Feijoada",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Fish Dinner",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Fish on a Stick",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Fish Yakisoba",
+   "group": "lunch/dinner",
+   "category": "noodles (instant noodle / noodle dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Foraged Feast",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Forager's Stew",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Franks and Beans",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Free Range Sixam Pit Beast",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Fried Chicken Sliders",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Fried Fish",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Fried Fish Plate",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Galbi-jjim",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Garden Pizza",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Garden Salad",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Garlic Noodles",
+   "group": "lunch/dinner",
+   "category": "noodles (instant noodle / noodle dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Glacier Infused Iceberg Lettuce",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Grilled Cheese",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Grilled Chicken",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Grilled Fish Talla-Style",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Grilled Luna Fish",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Grilled Plantains",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Grub Dogs",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Gumbo",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Haddock Sandwich",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Hallacas",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Ham and Cheese Sandwich",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Ham Dinner",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Hamburger Sliders",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Hamburgers",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Herb Focaccia",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Herb-Crusted Salmon",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Honeycomb Garden Vegetable Cups",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Hot Corn Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Hot Miso Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Hot Onion Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Italian Meatballs",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Japchae",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Jollof Rice and Drumsticks",
+   "group": "lunch/dinner",
+   "category": "single-dish meal (rice dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Kebab Pizza",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Khao Niao Mamuang",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Knafeh",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Kontomin Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Leaf Wrapped Whole Fish",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Lobster Thermidor",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Lobster Tortellini",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Lovely Mushroom Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Lumpia",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Mac and Cheese",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Malaysian Satay",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Mapo Tofu with Pork",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Marshmallows",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Matzo Ball Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Meatless Monte Cristo",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Merguez",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Minced Pork Noodles",
+   "group": "lunch/dinner",
+   "category": "noodles (instant noodle / noodle dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Minestrone",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Miso Ramen",
+   "group": "lunch/dinner",
+   "category": "noodles (instant noodle / noodle dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Monte Cristo Sandwich",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Mucenici",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Mud Carp",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Mushroom Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Mushroom Steak",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Mysterious Mushroom Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Mămăligă",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Nasi Lemak",
+   "group": "lunch/dinner",
+   "category": "single-dish meal (rice dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Nightly Mushroom Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Nigiri",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Onigiri",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Palak Paneer",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Palm Nut Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pambazo",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pan de Campo",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pan De Muerto",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pan Fried Tilapia",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pancit Bihon",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pasta Primavera",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pastel de Camarão",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pastel De Nata",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pastel de Palmito",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pepperoni Pizza",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pho",
+   "group": "lunch/dinner",
+   "category": "noodles (instant noodle / noodle dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Pinchos",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pineapple Pizza",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pizza Caliente",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pizza Margherita",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pizza Marinara",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pizza Quattro Stagioni",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Poke Bowl",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pollo a la Brasa",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pork Adobo",
+   "group": "lunch/dinner",
+   "category": "single-dish meal (rice dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Pre-Made Meal",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Prosciutto-Wrapped Asparagus",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Puff Puff",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pufferfish Nigiri",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pumpkin Stew",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Pão de Queijo",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Rack of Lamb",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Ramen",
+   "group": "lunch/dinner",
+   "category": "noodles (instant noodle / noodle dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Red Velvet",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Remedy of the Ancients",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Roast Chicken",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Roast Tofu Chicken",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Roasted Fish",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Rustic Pate Drizzled in Aged Jus",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Salmon",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Salmon Nigiri",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Salt and Pepper Shrimp Cocktail",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Sandwich",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Sausage and Peppers",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Savory Bacon Love Petals",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Seafood Chowder",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Seafood Pizza",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Seaweed Ramen",
+   "group": "lunch/dinner",
+   "category": "noodles (instant noodle / noodle dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Semi-Firm Beet Noodles",
+   "group": "lunch/dinner",
+   "category": "noodles (instant noodle / noodle dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Sfincione",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Shish Kebabs",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Siopao",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Sizzled Brisket over Sour Clover Salad",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Spaghetti",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Spicy Mushroom Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Spicy Tuna Melt",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Steak",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Steamed Fish",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Steamed Rice",
+   "group": "lunch/dinner",
+   "category": "single-dish meal (rice dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Strawberry Jam Crumpets",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Superfood Salad",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tajine",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tamago Nigiri",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Taquitos",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "The Baconing",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Three Sisters Chili",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tiger Shrimp in Smoked Dewdrop Broth",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tikka Masala Pizza",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tofu Chicken Saltimbocca",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tofu Dogs",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tofu Pad Thai",
+   "group": "lunch/dinner",
+   "category": "noodles (instant noodle / noodle dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Tofu Stir Fry",
+   "group": "lunch/dinner",
+   "category": "single-dish meal (rice dish)",
+   "price": "meal"
+  },
+  {
+   "name": "Tofurkey Dinner",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tomato Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tortilla Wrapped Hotdog",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tri-Color Dango",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Trout Meunière",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tteokguk",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tuna Casserole",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Tuna Nigiri",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Turkey Dinner",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Vegan Pambazo",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Vegetable Casserole",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Vegetable Chili",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Vegetable Dumplings",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Vegetable Tempura",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Verdant Mushroom Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Volcano Pasta",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Walleye Surprise",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Watermelon Salad",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Wild Nut Soup",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "Zaatar Manakeesh",
+   "group": "lunch/dinner",
+   "category": "single-dish meal",
+   "price": "meal"
+  },
+  {
+   "name": "(Sim's Name) Signature Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Almond Macarons",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Amarena Gelato",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Apple Pie",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Bacio Gelato",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Banana Yogurt",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Black & White Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Black and White Cookies",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Blue Confetti Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Blue Moon",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Blueberry Pie",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Butter Pecan",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Cannoli",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Carrot Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Carrot Cake Cupcakes",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Cherry Ice Cream",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Chilling Mocha",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Chocolate Ice Cream",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Churros",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Classic Vanilla Cupcakes",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Coconut Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Cottage Pie",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Cream Snack Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Cupid's Cupcake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Dragon's Breath",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Faux Meat Cottage Pie",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Faux Meat Pie",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Flirty Heart Cookies",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Fluffy White Ribbon Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Fruit & Yogurt Parfait",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Fruit Cobbler",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Fruits of the Forest",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Gourmet Fruit Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Halo-Halo",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Hamburger Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Haunted Mint",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Honey Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Lactose Free Fruit & Yogurt Parfait",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Lactose Free SimCity Cheesecake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Lactose Free Yorkshire Pudding",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Lemon Gelato",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Liquorice Gelato",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Mango Sorbet",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Matcha Tea Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Meat Pie",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Mental Upheaval",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Minty Mocha Cupcakes",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Neapolitan Ice Cream",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Orange Sorbet",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Pancakes",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Panna Cotta",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Peach Yogurt",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Pistachio Gelato",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Plant Matter",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Pumpkin Pie",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Pure Perfection",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Rainbow Brownies",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Rainbow Sherbet",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Raspberry Pie",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Red Velvet Cupcakes",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Rice Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Ricotta Stregata Gelato",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Scout Cookies",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Silly Gummy Bear Pancakes",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "SimCity Cheesecake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Slice of Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Spooky Cookies",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Steak Tartare",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Stracciatella Gelato",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Strawberry Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Strawberry Ice Cream",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Sugar Free Carob Coconut Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Sweet And Sour Eggplant",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Sweet And Sour Pork",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Sweet Corn Pizza",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Taste of Diet",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "The Baconing Cupcakes",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "The Butterscotchman Cupcakes",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Tiered Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Tiramisu",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Twin Roses",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Vanilla Ice Cream",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "Vertical Berry Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Weight of the World",
+   "group": "dessert",
+   "category": "ice cream",
+   "price": "iceCream"
+  },
+  {
+   "name": "White & Black Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "White Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Winter Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Yorkshire Pudding",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Zombie Cake",
+   "group": "dessert",
+   "category": "bakery / dessert",
+   "price": "bakeryDessert"
+  },
+  {
+   "name": "Apple",
+   "group": "snack",
+   "category": "fruit",
+   "price": "fruit"
+  },
+  {
+   "name": "Avocado Maki Roll",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Berry Scones",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Bolt Protein Bar",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Burmese Samosa Soup",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Carrot",
+   "group": "snack",
+   "category": "fruit",
+   "price": "fruit"
+  },
+  {
+   "name": "Ceviche and Chips",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Chicken Chimichurri Skewers",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Chicken Nuggets",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Chips and Salsa",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Coconut",
+   "group": "snack",
+   "category": "fruit",
+   "price": "fruit"
+  },
+  {
+   "name": "Croissant",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Edamame",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Eggs and Toast",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Faux Meat and Chips",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Fish and Chips",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Fish Tacos",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "French Toast",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Fruit Salad",
+   "group": "snack",
+   "category": "fruit",
+   "price": "fruit"
+  },
+  {
+   "name": "Glazed Heirloom Bamboo Roll",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Goi Cuon",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Golden Eggs and Toast",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Grapes",
+   "group": "snack",
+   "category": "fruit",
+   "price": "fruit"
+  },
+  {
+   "name": "Grilled Fruit",
+   "group": "snack",
+   "category": "fruit",
+   "price": "fruit"
+  },
+  {
+   "name": "Honeyed World Fruit Charcuterie",
+   "group": "snack",
+   "category": "fruit",
+   "price": "fruit"
+  },
+  {
+   "name": "Hot Dog",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Hot Dogs",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Lactose Free Milk Bread",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Lobster Roll",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Meatball Tamale Bites",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Milk Bread",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Obsidian Eggs and Toast",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Pastry",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Pepperoni Pizza Rollup",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Pineapple",
+   "group": "snack",
+   "category": "fruit",
+   "price": "fruit"
+  },
+  {
+   "name": "Plasma Fruit Salad",
+   "group": "snack",
+   "category": "fruit",
+   "price": "fruit"
+  },
+  {
+   "name": "Ponzu-Wasabi Fish Tacos",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Pumpkin Scones",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Salmon Maki Roll",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Samosa",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Scone",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "Spherized Fruit Gel in Foam Nest",
+   "group": "snack",
+   "category": "fruit",
+   "price": "fruit"
+  },
+  {
+   "name": "Taco Casserole",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Terimayo Hot Dog",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Tofu Tacos",
+   "group": "snack",
+   "category": "snack",
+   "price": "snack"
+  },
+  {
+   "name": "Tuna Maki Roll",
+   "group": "snack",
+   "category": "bread / bakery",
+   "price": "bread"
+  },
+  {
+   "name": "(Sim Name)'s Special",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Alien Juice",
+   "group": "drink",
+   "category": "fruit juice",
+   "price": "juice"
+  },
+  {
+   "name": "Amygdelight",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Apple Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Bacciform Firkin",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "beer"
+  },
+  {
+   "name": "Bagley Berry Fizz",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Baked Chocolate Mousse",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Barley Bale",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "beer"
+  },
+  {
+   "name": "Beetle Juice",
+   "group": "drink",
+   "category": "fruit juice",
+   "price": "juice"
+  },
+  {
+   "name": "Berry Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Bespin Fizz",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Black Fern",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Black Spire Brew",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "beer"
+  },
+  {
+   "name": "Blue Raspberry",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Blurrgfire",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Boiler Room",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Buffalo Wing Tea",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "mocktail"
+  },
+  {
+   "name": "Ca Phe Trung",
+   "group": "drink",
+   "category": "coffee",
+   "price": "coffee"
+  },
+  {
+   "name": "Carbon Freeze",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Chilled Chatter Coffee",
+   "group": "drink",
+   "category": "coffee",
+   "price": "coffee"
+  },
+  {
+   "name": "Chilled Sage Green Tea",
+   "group": "drink",
+   "category": "tea / green tea",
+   "price": "tea"
+  },
+  {
+   "name": "Chocolate Cake",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Chocolate Chip Cookies",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Chocolate Pie",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Chocolate Scones",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Coffee",
+   "group": "drink",
+   "category": "coffee",
+   "price": "coffee"
+  },
+  {
+   "name": "Coquito",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Cream Cola",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Cupid Juice",
+   "group": "drink",
+   "category": "fruit juice",
+   "price": "juice"
+  },
+  {
+   "name": "Dagobah Slug Slinger",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Dim and Gusty",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Dragonfruit",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Draught of Reconfiguration",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Dyed Cocktail",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "EAPA",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "beer"
+  },
+  {
+   "name": "Elderberry Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Energy Crush",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Energy Nectar",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Espuma Agria",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Fizzy Fruity Drink",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Flaming Zesty Salt",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Fruit Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Futuristic Punch",
+   "group": "drink",
+   "category": "fruit juice",
+   "price": "juice"
+  },
+  {
+   "name": "Fuzzy Tauntaun",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Galactic Vita-Water",
+   "group": "drink",
+   "category": "drinking water",
+   "price": "water"
+  },
+  {
+   "name": "Granite Falls Grappo Blanco",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Granny Smash",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Grape Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Grapefruit Seltzer Water",
+   "group": "drink",
+   "category": "drinking water",
+   "price": "water"
+  },
+  {
+   "name": "High Energy Protein Plate",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Honey Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Horchata",
+   "group": "drink",
+   "category": "milk / milk drink",
+   "price": "milk"
+  },
+  {
+   "name": "Hot and Smoky",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Hot Chatter Coffee",
+   "group": "drink",
+   "category": "coffee",
+   "price": "coffee"
+  },
+  {
+   "name": "Hot Sage Green Tea",
+   "group": "drink",
+   "category": "tea / green tea",
+   "price": "tea"
+  },
+  {
+   "name": "Jet Juice",
+   "group": "drink",
+   "category": "fruit juice",
+   "price": "juice"
+  },
+  {
+   "name": "Juice on the Rocks",
+   "group": "drink",
+   "category": "fruit juice",
+   "price": "juice"
+  },
+  {
+   "name": "Kava",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "mocktail"
+  },
+  {
+   "name": "Lemon Seltzer Water",
+   "group": "drink",
+   "category": "drinking water",
+   "price": "water"
+  },
+  {
+   "name": "Lime Seltzer Water",
+   "group": "drink",
+   "category": "drinking water",
+   "price": "water"
+  },
+  {
+   "name": "Lotta Cocolata",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Love Potion #4",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Lychee Soda",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Magic Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "McDillian's Single Nect",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Melon Soda",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Mint Chocolate Chip",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Minty Mocha",
+   "group": "drink",
+   "category": "coffee",
+   "price": "coffee"
+  },
+  {
+   "name": "Moogan Tea",
+   "group": "drink",
+   "category": "tea / green tea",
+   "price": "tea"
+  },
+  {
+   "name": "Moonpetal Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Moonpetal Punch",
+   "group": "drink",
+   "category": "fruit juice",
+   "price": "juice"
+  },
+  {
+   "name": "Old Yorkfield Classic 16",
+   "group": "drink",
+   "category": "milk / milk drink",
+   "price": "milk"
+  },
+  {
+   "name": "Omazake",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "spirits"
+  },
+  {
+   "name": "Pain au Chocolat",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Party Extender",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "mocktail"
+  },
+  {
+   "name": "Passion Fruit",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Pineapple-Lime",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Plasma Jane",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Plasma Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Plum Soda",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Plumberry Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Popcorn Crickets",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Popcorn Shrimp",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Potato Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Prairie Grass Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Prose and Pop",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Protein Shake",
+   "group": "drink",
+   "category": "milk / milk drink",
+   "price": "milk"
+  },
+  {
+   "name": "Ridgeport",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Riverblossom Cranerlet Nuala",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Rootbeer Float",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Salty Llama",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Sea of Fire",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Sea Splash",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Shadow Realm",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Silent Film",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Simadder Cherry Sap",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "spirits"
+  },
+  {
+   "name": "Simsmapolitan",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Snaggle Fluster",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Soda",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Soft Shadow Avornalino",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Sour Punch",
+   "group": "drink",
+   "category": "fruit juice",
+   "price": "juice"
+  },
+  {
+   "name": "Space Energy Drink",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Sparkling Apple Juice",
+   "group": "drink",
+   "category": "fruit juice",
+   "price": "juice"
+  },
+  {
+   "name": "Sparkling Water",
+   "group": "drink",
+   "category": "drinking water",
+   "price": "water"
+  },
+  {
+   "name": "Spectral Spritzer",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Strawberry Fizzy",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Strawberry Fizzy Cupcakes",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Strawberry Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Sugarcane Juice",
+   "group": "drink",
+   "category": "fruit juice",
+   "price": "juice"
+  },
+  {
+   "name": "Sunlight Reversal Cocktail",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Sunset Valley",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Super Chocolate Tummers Bomb",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Super Chocolate Tummers Bomb Cupcakes",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Sweet and Spicy",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Tang and Zing",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Thai Iced Milk Tea",
+   "group": "drink",
+   "category": "tea / green tea",
+   "price": "tea"
+  },
+  {
+   "name": "The Ultimate Vampire Cure",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Trash Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Valerian Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Vampire Resistance Cocktail",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Vanilla Sea Shells and Chocolate Caviar",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  },
+  {
+   "name": "Verdant and Funk",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Vigorator",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Virgin Caipirinha",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "mocktail"
+  },
+  {
+   "name": "Vitality Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Von Haunt Estate Meloire",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Water",
+   "group": "drink",
+   "category": "drinking water",
+   "price": "water"
+  },
+  {
+   "name": "White Llama Nectar",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "wine"
+  },
+  {
+   "name": "Wolf-B-Gone",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Wrench",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "cocktail"
+  },
+  {
+   "name": "Wutaheftabir",
+   "group": "drink",
+   "category": "alcohol/mocktail/fantasy drink (no official price)",
+   "price": "spirits"
+  },
+  {
+   "name": "Zebra Fizz",
+   "group": "drink",
+   "category": "soft drink",
+   "price": "softDrink"
+  }
+ ]
+}

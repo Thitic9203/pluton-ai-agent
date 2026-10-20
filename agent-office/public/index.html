@@ -1,0 +1,543 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><script>try{var t=JSON.parse(localStorage.getItem('ao3.theme'));if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.live-line{font-size:13px;color:var(--muted);flex-basis:100%;text-align:right;margin:0}
+.nosrc{color:var(--muted);font-weight:500}
+[data-src]{cursor:help}
+.src-tip{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:60;padding:10px 14px;border-radius:12px;background:var(--surface);color:var(--ink);border:1px solid var(--line);font-size:14px;line-height:1.5}
+.pm-ro{margin:4px 0;min-height:44px;display:flex;align-items:center}
+.signin{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:16px;background:var(--bg)}
+.signin .box{max-width:420px;width:100%;text-align:center;display:grid;gap:12px}
+.signin button{min-height:44px;padding:0 20px;border-radius:999px;border:1px solid var(--line);background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:600;cursor:pointer}
+.signin button[disabled]{opacity:.5;cursor:not-allowed}
+.signin .msg{color:var(--muted);min-height:1.5em}
+html:has(.signin:not([hidden])){overflow:hidden}
+</style></head><body>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Agent Home Office</title>
+<link rel="icon" type="image/png" href="./favicon.png?v=2">
+<link rel="shortcut icon" href="./favicon.ico?v=2">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: header, then the 3D office beside a control panel (stacks below 1024), then the agent:* pipeline, then the team list that also serves screen readers. */
+:root {
+  /* Taskfolio's own tokens (src/styles/tokens.css; owner, 14 Oct 2026: "ปรับโทนให้เป็นเขียวแบบ taskfolio"): teal accent-500,
+     canvas, surface, ink-900/500, hairline border, warning-fg and danger-fg */
+  --bg: #E6EBED; --surface: #F2F5F6; --ink: #1E282E; --muted: #4C5C65; --line: #CDD7DA;
+  --accent: #0D767D; --accent-ink: #FFFFFF; --warn: #7E5310; --bad: #9C3227; --wait: #6b4fbb; --sweep: #37575C;
+  --ols: #7A4A12; --ols-ink: #FFFFFF; /* the OLS project chip: a warm brown from the same family as --warn */
+  --chip-bg: #DBE2E4; --tag-bg: rgba(242,245,246,.94); --tag-ink: #1E282E;
+  --font-display: "Bai Jamjuree", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Thai", system-ui, -apple-system, sans-serif;
+  --font-data: "JetBrains Mono", ui-monospace, monospace;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #2C353F; --surface: #39434E; --ink: #EEF2F6; --muted: #A5B2BE; --line: #48545F;
+  --accent: #589D94; --accent-ink: #0A2A2D; --warn: #E9B96B; --bad: #F59386; --wait: #b9a3ff; --sweep: #9FB6C4; --chip-bg: #242C34;
+  --ols: #E2A55E; --ols-ink: #2A1A06;
+  --tag-bg: rgba(44,53,63,.92); --tag-ink: #EEF2F6; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #2C353F; --surface: #39434E; --ink: #EEF2F6; --muted: #A5B2BE; --line: #48545F;
+  --accent: #589D94; --accent-ink: #0A2A2D; --warn: #E9B96B; --bad: #F59386; --wait: #b9a3ff; --sweep: #9FB6C4; --chip-bg: #242C34;
+  --ols: #E2A55E; --ols-ink: #2A1A06;
+  --tag-bg: rgba(44,53,63,.92); --tag-ink: #EEF2F6; color-scheme: dark }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { overflow-x: clip; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1720px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 40px; display: grid; gap: 16px; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+code { font-family: var(--font-data); font-size: .85em; }
+
+.top { display: grid; grid-template-columns: minmax(0,1fr); gap: 10px; align-items: center; }
+.brand h1 { font-family: var(--font-display); font-size: 1.6rem; margin: 0; line-height: 1.2; text-wrap: balance; }
+.brand p { margin: 0; color: var(--muted); font-size: .9rem; }
+.brand .proj { font-family: var(--font-data); font-size: .8rem; color: var(--ink); background: var(--chip-bg); padding: 1px 8px; border-radius: 999px; }
+.top-right { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; align-items: center; }
+.money-row { order: 9; flex: 1 1 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.money-row .stat { min-width: 0; }
+/* below 768: the fund on its own full row, the AI and office costs side by side beneath it */
+@media (max-width: 768px) { .money-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } .money-row .stat.fund { grid-column: 1 / -1; } }
+/* from 1025 (owner, 14 Oct 2026: "ย้ายสามกล่องนี้ไปอยู่ขวามือบน"): the brand on the left; on the right, top aligned, the status
+   pill, clock and theme button in one compact row over the three money tiles in one row of equal widths */
+@media (min-width: 1025px) {
+  .top { grid-template-columns: minmax(280px, 1fr) auto; align-items: start; column-gap: 20px; }
+  .top-right { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "sum clock theme" "money money money"; gap: 8px; justify-items: end; }
+  .top-right > #summary { grid-area: sum; } .top-right > #clock { grid-area: clock; } .top-right > #themeBtn { grid-area: theme; }
+  .top-right > .money-row { grid-area: money; order: 0; justify-self: stretch; grid-template-columns: repeat(3, minmax(200px, 1fr)); }
+}
+/* 769 to 1024: two columns do not fit without wrapping, so the tiles run full width under the brand; the pills sit right */
+@media (min-width: 769px) and (max-width: 1024px) { .top-right { justify-content: flex-end; } }
+.pill { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: .9rem; white-space: nowrap; }
+.pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.clock { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.icon-btn { min-width: 44px; justify-content: center; }
+.icon-btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
+.panel .tabs { justify-self: start; width: min(100%, 520px); }
+.tabs button { white-space: nowrap; padding: 0 6px; }
+/* project label chips (owner, 14 Oct 2026): Taskfolio in the accent teal, OLS in its own warm brown, both small mono pills */
+.pchip { justify-self: end; font-family: var(--font-data); font-size: .68rem; font-weight: 500; line-height: 1.5; padding: 1px 8px; border-radius: 999px; white-space: nowrap; background: var(--accent); color: var(--accent-ink); }
+.pchip[data-p="OLS"] { background: var(--ols); color: var(--ols-ink); }
+#pane-projects .proj-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.proj-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.proj-head .pchip { justify-self: auto; }
+.proj-head .scope { font-size: .72rem; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--chip-bg); color: var(--ink); }
+.proj-line { margin: 0; line-height: 1.5; }
+.panel .roster { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.panel .people-list { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); max-height: none; overflow: visible; }
+#pane-scene { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; align-items: stretch; }
+.scard { display: grid; gap: 10px; align-content: start; padding: 14px; border-radius: 14px; background: var(--bg); border: 1px solid var(--line); }
+.scard h3 { margin: 0; font-family: var(--font-display); font-size: .95rem; }
+.seg { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; }
+.seg button { min-height: 44px; display: grid; justify-items: center; align-content: center; gap: 2px; padding: 6px 8px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-size: .82rem; line-height: 1.4; }
+.seg button .ic { font-size: 1.05rem; line-height: 1.2; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.switch { justify-self: start; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px 0 6px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; }
+.switch .knob { width: 40px; height: 24px; border-radius: 999px; background: var(--chip-bg); position: relative; transition: background .2s; }
+.switch .knob::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .2s; }
+.switch[aria-pressed="true"] .knob { background: var(--accent); }
+.switch[aria-pressed="true"] .knob::after { transform: translateX(16px); }
+.pane-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.pane-head h2 { margin: 0; }
+.pane-head .count { font-size: .85rem; color: var(--muted); font-weight: 500; }
+.pane-head .add { padding: 0 16px; }
+.team-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; align-items: start; }
+.tgroup { display: grid; gap: 6px; padding: 12px; border-radius: 14px; background: var(--bg); border: 1px solid var(--line); }
+.tgroup > header { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.tgroup > header i { width: 10px; height: 26px; border-radius: 6px; }
+.tgroup > header b { font-family: var(--font-display); }
+.tgroup > header span { font-size: .8rem; color: var(--muted); }
+.tgroup > p { margin: 0 0 4px; font-size: .78rem; color: var(--muted); line-height: 1.5; }
+.pm { border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+.pm summary { list-style: none; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; cursor: pointer; font-weight: 600; }
+.pm summary::-webkit-details-marker { display: none; }
+.pm summary::after { content: 'แก้ไข'; font-size: .78rem; font-weight: 500; color: var(--muted); }
+.pm[open] summary::after { content: 'ปิด'; }
+.pm .pm-body { display: grid; gap: 8px; padding: 0 12px 12px; }
+.pm .pm-body label { font-size: .78rem; color: var(--muted); }
+.pm .pm-foot { display: flex; justify-content: flex-end; }
+@media (min-width: 1025px) { .main .stage { aspect-ratio: 2 / 1; } }
+/* Owner 16 Oct 2026: the scene fits the window height, so it is never taller than the screen and the renderer keeps full sharpness (watchQuality drops the pixel ratio under 40 fps). */
+@media (min-width: 1025px) { .main .stage { width: min(100%, calc((100dvh - 260px) * 2)); margin-inline: auto; } }
+.stage { position: relative; border-radius: 18px; overflow: hidden; border: 1px solid var(--line); background: #bfe3f7; min-width: 0; aspect-ratio: 16 / 10; max-width: 100%; }
+.stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.tags { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.tag { position: absolute; transform: translate(-50%, -100%); background: var(--tag-bg); color: var(--tag-ink); border-radius: 8px; padding: 2px 8px; font-size: 11px; line-height: 1.35; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,.2); display: flex; gap: 5px; align-items: center; }
+.tag i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; }
+.tag[data-state="blocked"] { outline: 2px solid var(--bad); }
+#tags .tag { visibility: hidden; opacity: 0; transition: opacity .12s; }
+#tags .tag.show { visibility: visible; opacity: 1; }
+/* no room or zone names on the map (owner, 14 Oct 2026: "ไม่ต้องแสดงชื่อห้องและ ชื่อโซน") */
+#tags .room-tag { display: none; }
+.room-tag { position: absolute; transform: translate(-50%, -50%); font-size: 10.5px; font-weight: 600; letter-spacing: .03em; color: #2c3a36; background: rgba(255,255,255,.7); padding: 1px 7px; border-radius: 6px; white-space: nowrap; }
+.demo-note { position: absolute; left: 12px; top: 12px; background: rgba(0,0,0,.55); color: #fff; font-size: 12px; padding: 4px 10px; border-radius: 999px; }
+.hud { display: none; }
+.stage.full { position: fixed; inset: 0; z-index: 50; border-radius: 0; aspect-ratio: auto !important; max-width: none; width: 100vw; height: 100vh; border: 0; }
+.stage.full .hud { display: flex; position: absolute; left: 12px; top: 12px; gap: 8px; flex-wrap: wrap; pointer-events: none; }
+.hud > span { display: grid; gap: 6px; padding: 8px 14px; border-radius: 14px; background: rgba(20, 28, 26, .82); color: #f4f1ea; backdrop-filter: blur(6px); line-height: 1.5; }
+.hud b { font-size: .72rem; font-weight: 500; opacity: .8; }
+.hud i { font-style: normal; font-family: var(--font-data); font-size: 1.3rem; font-weight: 700; line-height: 1.2; }
+.hud .h-fund i { color: #86BBB4; }
+.hud .h-clock, .hud .h-team { align-content: center; font-family: var(--font-data); font-size: .9rem; }
+.stage.full .stage-tools { bottom: max(12px, env(safe-area-inset-bottom)); }
+#fullBtn[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.stage-tools { position: absolute; right: 10px; bottom: 10px; left: 10px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-items: center; pointer-events: none; }
+.stage-tools > * { pointer-events: auto; }
+@media (max-width: 1100px) { .stage-tools .hint { display: none; } }
+.stage-tools .hint { background: rgba(0,0,0,.5); color: #fff; font-size: 11.5px; padding: 3px 9px; border-radius: 999px; }
+.stage-tools button[aria-pressed="true"] { background: #1f1d1c; color: #f4f1ea; }
+.stage-tools button { min-height: 44px; min-width: 44px; padding: 0 12px; border-radius: 999px; border: 0; background: rgba(255,255,255,.92); color: #17302b; font-size: .85rem; font-weight: 600; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+.fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: #17302b; font-size: .95rem; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; background: var(--chip-bg); padding: 4px; border-radius: 999px; }
+.tabs button { min-height: 44px; border: 0; border-radius: 999px; background: transparent; font-weight: 500; }
+.tabs button[aria-selected="true"] { background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.12); font-weight: 600; }
+.panel h2 { font-family: var(--font-display); font-size: 1.05rem; margin: 0; }
+.panel .hint { color: var(--muted); font-size: .85rem; margin: 0; }
+.group { display: grid; gap: 8px; }
+.group > .label { font-size: .8rem; letter-spacing: .04em; color: var(--muted); }
+.person { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
+.pm input[type="text"] { width: 100%; min-height: 44px; border: 1px solid var(--line); border-radius: 10px; padding: 0 10px; background: var(--bg); }
+.person-head { display: grid; grid-template-columns: 28px minmax(0,1fr) auto; gap: 8px; align-items: center; }
+.person-head b { font-family: var(--font-display); font-size: 1rem; }
+.swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.person input[type="text"] { width: 100%; min-height: 44px; border: 1px solid var(--line); border-radius: 10px; padding: 0 10px; background: var(--surface); }
+.roles { display: flex; flex-wrap: wrap; gap: 6px; }
+.roles button { min-height: 44px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: .85rem; }
+.roles button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.del { min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--bad); font-size: .85rem; white-space: nowrap; }
+.del[data-armed="true"] { background: var(--bad); color: var(--surface); border-color: var(--bad); }
+.add { min-height: 44px; border-radius: 10px; border: 1px dashed var(--accent); background: transparent; color: var(--accent); font-weight: 600; }
+.people-list { display: grid; gap: 10px; max-height: 560px; overflow-y: auto; padding-right: 2px; }
+.choice { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+.choice button { min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
+.choice button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 600; }
+.now { font-size: .85rem; color: var(--muted); margin: 0; }
+
+.flow-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.flow-head h2, .team h2 { font-family: var(--font-display); font-size: 1.15rem; margin: 0; }
+.cap { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cap b { color: var(--ink); }
+.cap[data-full="true"] b:first-child { color: var(--warn); }
+.flow-scroll { overflow: clip; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+/* fixed height (owner, 14 Oct 2026: "ความสูงคงที่ ไม่ยืดๆ หดๆ"); a busy column scrolls inside itself */
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); height: 460px; }
+.col { display: grid; grid-template-rows: 58px minmax(0, 1fr); border-right: 1px solid var(--line); min-width: 0; min-height: 0; }
+.col-body { overflow: clip; }
+.col:last-child { border-right: 0; }
+.col-head { padding: 10px 10px 8px; border-bottom: 1px solid var(--line); display: grid; gap: 2px; }
+.col-head .gate { justify-self: start; }
+.col-head b { font-size: .88rem; font-weight: 600; }
+.col-head .who { font-size: .75rem; color: var(--muted); }
+.gate { justify-self: start; font-size: .7rem; font-weight: 600; letter-spacing: .04em; padding: 1px 8px; border-radius: 999px; background: var(--wait); color: var(--surface); }
+.col[data-kind="block"] .col-head { box-shadow: inset 0 3px 0 var(--bad); }
+.col[data-kind="wait"] .col-head { box-shadow: inset 0 3px 0 var(--wait); }
+.col[data-kind="work"] .col-head { box-shadow: inset 0 3px 0 var(--accent); }
+.col[data-kind="idle"] .col-head { box-shadow: inset 0 3px 0 var(--muted); }
+.col-body { padding: 8px; display: grid; gap: 6px; align-content: start; min-height: 96px; }
+.chip { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 6px; padding: 7px 8px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); font-size: .8rem; min-width: 0; }
+.chip .num { font-family: var(--font-data); font-size: .72rem; color: var(--muted); }
+.chip .t { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.more { font-size: .75rem; color: var(--muted); padding: 2px; }
+.chip .gate { font-size: .66rem; padding: 0 6px; }
+.chip.rel { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.chip.rel .t { grid-column: 1 / -1; }
+.chip .bar { grid-column: 1 / -1; height: 6px; border-radius: 6px; background: var(--chip-bg); overflow: hidden; }
+.chip .bar i { display: block; height: 100%; background: var(--accent); }
+.chip .p { grid-column: 1 / -1; color: var(--muted); font-size: .72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chip[data-short="true"] .p { color: var(--warn); }
+.empty { font-size: .75rem; color: var(--muted); padding: 4px 2px; }
+.flow-note { font-size: .8rem; color: var(--muted); margin: 8px 0 0; }
+
+.team h2 { margin-bottom: 8px; }
+.team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; list-style: none; margin: 0; padding: 0; }
+.card { display: grid; grid-template-columns: 36px minmax(0,1fr); gap: 10px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; }
+.card .swatch { width: 36px; height: 36px; }
+.card b { display: block; font-weight: 600; font-family: var(--font-display); }
+.card .meta { color: var(--muted); font-size: .85rem; }
+.card .duty { font-size: .8rem; color: var(--muted); overflow-wrap: anywhere; }
+.roster { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.roster .card { grid-template-columns: 10px minmax(0, 1fr); gap: 10px; padding: 6px 10px; border-radius: 12px; background: var(--bg); align-items: center; }
+.roster .card .swatch { width: 8px; height: 30px; border-radius: 6px; }
+.roster .who-now { gap: 1px; }
+.roster .card .duty, .roster .card .meta { display: none; }
+/* up to two lines, broken only between Thai words, never cut short (owner comment, 14 Oct 2026) */
+.roster .who-now .doing { font-size: .82rem; font-weight: 500; color: var(--muted); line-height: 1.5; min-height: 3em; white-space: normal; word-break: normal; overflow-wrap: normal; line-break: strict; }
+.who-now { display: grid; gap: 4px; min-width: 0; }
+.who-now .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.who-now .top b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who-now .top .status { margin-top: 0; flex: none; }
+.who-now .doing { font-size: .9rem; font-weight: 600; overflow-wrap: anywhere; }
+.card .meta { font-size: .78rem; }
+.status { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-size: .82rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--chip-bg); }
+.status i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.s-working i { background: var(--accent); } .s-waiting i { background: var(--wait); }
+.s-blocked i { background: var(--bad); } .s-idle i { background: var(--muted); } .s-sweeping i { background: var(--sweep); }
+.chip .imp { display: inline-block; font-size: .66rem; font-weight: 600; padding: 0 6px; border-radius: 999px; background: color-mix(in srgb, var(--sweep) 22%, var(--surface)); color: var(--ink); }
+.s-blocked { color: var(--bad); }
+
+/* team fund: header counter, toast, criteria and recent income */
+.fund { background: var(--ink); color: var(--bg); border-color: var(--ink); font-variant-numeric: tabular-nums; }
+.fund b { font-weight: 500; opacity: .8; font-size: .8rem; }
+.fund #fundVal { font-family: var(--font-data); font-size: 1rem; }
+.toast { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); max-width: calc(100% - 24px); background: var(--tag-bg); color: var(--tag-ink); border-radius: 12px; padding: 8px 14px; font-size: .85rem; box-shadow: 0 6px 18px rgba(0,0,0,.25); pointer-events: none; }
+.toast b { font-family: var(--font-data); }
+.fund-box-unused { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; margin-top: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+.fund-box h3 { font-family: var(--font-display); font-size: 1rem; margin: 0 0 8px; }
+.tiers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.tier { display: grid; gap: 2px; padding: 8px 10px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); font-size: .78rem; color: var(--muted); }
+.tier b { font-family: var(--font-data); color: var(--ink); font-size: .95rem; }
+.paid { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: .82rem; }
+.paid li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: baseline; padding-top: 6px; border-top: 1px solid var(--line); }
+.paid li:first-child { border-top: 0; padding-top: 0; }
+.paid .note { grid-column: 1 / -1; color: var(--muted); font-size: .75rem; }
+.paid .amt { font-family: var(--font-data); color: var(--accent); }
+.paid .k { font-family: var(--font-data); color: var(--muted); }
+.paid .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.debt { font-variant-numeric: tabular-nums; }
+.debt b { font-weight: 500; color: var(--muted); font-size: .8rem; }
+.debt #debtHead { font-family: var(--font-data); }
+.debt[data-owing="true"] #debtHead { color: var(--bad); }
+.stat { display: grid; gap: 8px; min-height: 72px; min-width: 200px; padding: 10px 20px; border-radius: 18px; align-content: center; border: 1px solid var(--line); background: var(--surface); }
+.stat b { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: .8rem; font-weight: 500; line-height: 1.6; }
+.stat .chip-st { font-style: normal; font-size: .72rem; font-weight: 600; line-height: 1.6; padding: 1px 9px; border-radius: 999px; }
+.stat > span { font-family: var(--font-data); font-size: 1.9rem; line-height: 1.1; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+/* fund tile in the page's own tokens (owner comment, 14 Oct 2026: "สีไม่โอเค ปรับสีให้ตรงธีม") */
+.stat.fund { background: var(--accent); color: var(--accent-ink); border-color: transparent; box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 30%, transparent); }
+.stat.fund #fundVal { color: var(--accent-ink); font-size: 1.9rem; }
+.stat.debt { background: var(--surface); border-color: var(--line); }
+.stat.bill > span { font-family: var(--font-data); color: var(--ink); }
+.stat.debt #debtHead, .stat.debt #officeHead { color: var(--ink); }
+.stat.debt .chip-st { background: var(--accent); color: var(--accent-ink); }
+.stat.debt[data-owing="true"] { background: linear-gradient(135deg, color-mix(in srgb, var(--bad) 18%, var(--surface)), var(--surface)); border-color: color-mix(in srgb, var(--bad) 50%, var(--line)); }
+.stat.debt[data-owing="true"] #debtHead, .stat.debt[data-owing="true"] #officeHead { color: var(--ink); }
+.stat.debt[data-owing="true"] .chip-st { background: var(--bad); color: #fff; }
+@media (max-width: 560px) { .stat { min-width: 0; flex: 1 1 150px; } .stat > span, .stat.fund #fundVal { font-size: 1.5rem; } }
+.cost-box { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+.cost-box .tiers { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.money h2 { font-family: var(--font-display); font-size: 1.15rem; margin: 0 0 10px; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.kpi { display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); min-width: 0; }
+.kpi span { font-size: .8rem; color: var(--muted); }
+.kpi b { font-family: var(--font-data); font-size: 1.35rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.kpi .good { color: var(--accent); }
+.kpi[data-owing="true"] b { color: var(--bad); }
+.money-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.books { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+.side { display: grid; gap: 12px; align-content: start; padding: 14px; border-radius: 18px; border: 1px solid var(--line); min-width: 0; }
+.side.income { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); border-top: 4px solid var(--accent); }
+.side.expense { background: color-mix(in srgb, var(--bad) 6%, var(--bg)); border-top: 4px solid var(--bad); }
+.side-h { display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--font-display); font-size: 1.05rem; }
+.side-h i { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-style: normal; font-size: .9rem; color: #fff; }
+.income .side-h i { background: var(--accent); color: var(--accent-ink); } .expense .side-h i { background: var(--bad); }
+.side .kpis { margin: 0; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.side .mcard { grid-column: auto; }
+@media (max-width: 1024px) { .books { grid-template-columns: minmax(0, 1fr); } }
+.mcard { display: grid; gap: 10px; padding: 14px 16px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); min-width: 0; }
+.mcard h3 { font-family: var(--font-display); font-size: 1rem; margin: 0; }
+.mcard.wide { grid-column: span 2; }
+.mnote { margin: 0; font-size: .75rem; color: var(--muted); }
+.rt { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.rt td { padding: 7px 0; border-top: 1px solid var(--line); vertical-align: middle; }
+.rt tr:first-child td { border-top: 0; }
+.rt td:last-child { text-align: right; font-family: var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 8px; }
+#costMethod td:last-child { white-space: normal; text-align: left; font-family: inherit; overflow-wrap: anywhere; } /* R70 */
+.chip-st:empty { display: none; } /* R71 */
+.rt .muted { color: var(--muted); font-size: .78rem; }
+@media (max-width: 1024px) { .money-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .money-grid { grid-template-columns: minmax(0, 1fr); } .mcard.wide { grid-column: auto; } }
+.ledger { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; margin: 0; font-size: .85rem; }
+.ledger dt { color: var(--muted); }
+.ledger .sec { color: var(--ink); font-weight: 600; padding-top: 6px; border-top: 1px solid var(--line); }
+.ledger dd.sec { font-weight: 700; }
+.stock { margin: 0; font-size: .82rem; line-height: 1.6; } .stock b { font-weight: 600; margin-right: 6px; }
+.ledger dd { margin: 0; text-align: right; font-family: var(--font-data); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.ledger .good { color: var(--accent); } .ledger .owe { color: var(--bad); font-weight: 600; }
+.pay { min-height: 44px; width: 100%; border-radius: 12px; border: 0; background: var(--ink); color: var(--bg); font-weight: 600; }
+.pay:disabled { opacity: .45; cursor: not-allowed; }
+.fx { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: .85rem; margin-top: 8px; }
+.fx input { width: 90px; min-height: 44px; border: 1px solid var(--line); border-radius: 10px; padding: 0 10px; background: var(--bg); font-family: var(--font-data); }
+.fx .muted { color: var(--muted); }
+.size { display: inline-block; font-family: var(--font-data); font-size: .7rem; padding: 0 6px; border-radius: 6px; background: var(--chip-bg); color: var(--ink); margin-right: 4px; }
+/* Sims style command wheel around a person */
+.tag { pointer-events: auto; cursor: pointer; }
+.pie { position: absolute; width: 0; height: 0; z-index: 5; }
+.pie-center { position: absolute; transform: translate(-50%, -50%); min-width: 44px; min-height: 44px; padding: 0 12px; border-radius: 999px; border: 0; background: #1f1d1c; color: #f4f1ea; font-weight: 600; font-size: .8rem; box-shadow: 0 6px 18px rgba(0,0,0,.35); white-space: nowrap; }
+.pie-opt { position: absolute; transform: translate(-50%, -50%); min-height: 44px; padding: 0 14px; border-radius: 999px; border: 2px solid #b98a5e; background: #f4f1ea; color: #1f1d1c; font-size: .82rem; font-weight: 600; white-space: nowrap; box-shadow: 0 6px 16px rgba(0,0,0,.28); }
+.pie-opt:hover, .pie-opt:focus-visible { background: #b98a5e; color: #fff; }
+.bubble { position: absolute; transform: translate(-50%, -100%); max-width: 220px; background: #fffdf8; color: #1f1d1c; border-radius: 14px; padding: 6px 11px; font-size: 12.5px; line-height: 1.35; box-shadow: 0 6px 16px rgba(0,0,0,.25); pointer-events: none; text-align: center; }
+.bubble { transition: opacity .25s ease; } .bubble.occluded { opacity: .22; } .bubble:not([style*=left]) { visibility: hidden; } /* unseen until laid out clear of the others (an entry tween sets other styles first) */
+.bubble::after { content: ''; position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%); border: 7px solid transparent; border-top-color: #fffdf8; border-bottom: 0; }
+.thought { position: absolute; transform: translate(-50%, -100%); margin-top: -12px; max-width: 220px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; padding: 6px 12px; font-size: 12.5px; line-height: 1.35; font-style: italic; box-shadow: 0 6px 16px rgba(0,0,0,.2); pointer-events: none; text-align: center; }
+.thought::before, .thought::after { content: ''; position: absolute; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); }
+.thought::before { width: 10px; height: 10px; left: calc(50% - 12px); bottom: -12px; }
+.thought::after { width: 6px; height: 6px; left: calc(50% - 19px); bottom: -20px; }
+.missions { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.mission { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 8px; font-size: .82rem; }
+.mission .m-t { overflow-wrap: anywhere; }
+.mission .m-r { font-family: var(--font-data); color: var(--accent); }
+.mission .m-bar { grid-column: 1 / -1; height: 6px; border-radius: 6px; background: var(--chip-bg); overflow: hidden; }
+.mission .m-bar i { display: block; height: 100%; background: var(--accent); }
+.mission .m-p { grid-column: 1 / -1; color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.mission.done .m-t { color: var(--muted); }
+.swatch-opt { display: inline-flex; align-items: center; gap: 6px; }
+.swatch-opt i { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,.25); flex: none; }
+.cmd { grid-column: 2; justify-self: start; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); font-weight: 600; font-size: .85rem; }
+@media (max-width: 720px) { .fund-box { grid-template-columns: minmax(0, 1fr); } .tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+@media (max-width: 1024px) { .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, 300px); height: auto; } .col { border-bottom: 1px solid var(--line); } }
+@media (max-width: 560px) { .flow { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(4, 250px); } .col { border-right: 0; } }
+@media (max-width: 1024px) { .main { grid-template-columns: minmax(0,1fr); } .people-list { max-height: none; } }
+@media (max-width: 560px) {
+  .top { grid-template-columns: minmax(0,1fr); }
+  .top-right { justify-content: flex-start; }
+  .stage { aspect-ratio: 4 / 5; }
+  .tag span { display: none; }
+  .tag { padding: 3px 6px; }
+  .room-tag { font-size: 9.5px; }
+  .stage-tools .hint { display: none; }
+  .brand h1 { font-size: 1.35rem; }
+}
+</style>
+
+<div class="signin" id="signin"><div class="box"><h1>AI Agent Home Office</h1><p>ใช้สำหรับทีม Pluton เท่านั้น เพื่อดูงานของ AI Agent</p><button type="button" id="signinBtn">เข้าสู่ระบบด้วย Google</button><p class="msg" id="signinMsg" role="status"></p></div></div>
+<div class="src-tip" id="srcTip" role="status" hidden></div>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>AI Agent Home Office</h1>
+      <p>ทีม AI agent รับงานจากหลายโปรเจกต์ ดูว่าใครทำงานอะไร อยู่ห้องไหน รออะไร ติดตรงไหน</p>
+    </div>
+    <div class="top-right">
+      <span class="pill" id="summary"><span class="dot"></span><span id="summaryText"></span></span>
+      <div class="money-row">
+      <span class="stat fund" id="fund" aria-live="polite"><b>เงินสนับสนุนทีม</b><span id="fundVal"></span></span>
+      <span class="stat debt" id="debtPill" data-owing="false"><b>ค่าใช้จ่ายด้าน AI <i class="chip-st" id="debtChip"></i></b><span id="debtHead"></span></span>
+      <span class="stat debt" id="officePill" data-owing="false"><b>ค่าใช้จ่ายออฟฟิศ <i class="chip-st" id="officeChip"></i></b><span id="officeHead"></span></span>
+      </div>
+      <p class="live-line" id="agentOff" hidden>agent ยังไม่เปิดใช้งาน</p>
+      <p class="live-line" id="fresh" role="status"></p>
+      <span class="pill clock" id="clock">--:--</span>
+      <button class="pill icon-btn" id="themeBtn" type="button" aria-pressed="false" aria-label="สลับธีมมืด">◐</button>
+    </div>
+  </header>
+
+  <section class="main">
+    <div class="stage" id="stage" role="img" aria-label="ภาพ 3 มิติของออฟฟิศ รายละเอียดอยู่ในรายชื่อทีมด้านล่าง">
+      <canvas id="scene3d" aria-hidden="true"></canvas>
+      <div class="tags" id="tags" aria-hidden="true"></div>
+      <div class="tags" id="bubbles" aria-live="polite"></div>
+      <span class="demo-note">ข้อมูลจริงจาก GitHub · แตะที่คนเพื่อดูงาน</span>
+      <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+      <div class="pie" id="pie" hidden></div>
+      <div class="fallback" id="fallback" hidden>เบราว์เซอร์นี้แสดงภาพ 3 มิติไม่ได้ สถานะทีมและงานยังดูได้ด้านล่าง</div>
+      <div class="stage-tools">
+        <span class="hint">ลากเพื่อหมุน · ลูกศรเลื่อนแมป · Q E หมุน · ล้อเมาส์ซูม</span>
+        <button type="button" id="soundBtn" aria-pressed="false" aria-label="เปิดเพลงและเสียง">♪ เสียง</button>
+        <button type="button" id="zoomIn" aria-label="ซูมเข้า">+</button>
+        <button type="button" id="zoomOut" aria-label="ซูมออก">−</button>
+        <button type="button" id="resetView">มุมเริ่มต้น</button>
+        <button type="button" id="fullBtn" aria-pressed="false" aria-label="เต็มจอ">⛶ เต็มจอ</button>
+      </div>
+      <div class="hud" id="hud" aria-hidden="true"><span class="h-fund"><b>เงินสนับสนุนทีม</b><i id="hudFund"></i></span><span class="h-debt"><b>ค่าใช้จ่ายด้าน AI</b><i id="hudDebt"></i></span><span class="h-clock" id="hudClock"></span><span class="h-team" id="hudTeam"></span></div>
+    </div>
+
+    <aside class="panel" aria-label="ทีมและฉาก">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" id="tab-now" aria-selected="true" aria-controls="pane-now">ทีมและงาน</button>
+        <button type="button" role="tab" id="tab-team" aria-selected="false" aria-controls="pane-team">จัดทีม</button>
+        <button type="button" role="tab" id="tab-scene" aria-selected="false" aria-controls="pane-scene">ฉาก</button>
+        <button type="button" role="tab" id="tab-projects" aria-selected="false" aria-controls="pane-projects">โปรเจกต์</button>
+      </div>
+
+      <div id="pane-now" role="tabpanel" aria-labelledby="tab-now" class="group">
+        <h2 id="teamTitle">ทีมและงานที่รับผิดชอบ</h2>
+        <ul class="roster" id="teamList"></ul>
+      </div>
+
+      <div id="pane-team" role="tabpanel" aria-labelledby="tab-team" class="group" hidden>
+        <div class="pane-head"><h2>จัดทีม <span class="count" id="teamCount"></span></h2><a class="add" id="rosterPr" href="https://github.com/Thitic9203/pluton-timesheet/blob/main/agent-office/projects.config.json" target="_blank" rel="noopener">แก้ทีมผ่าน pull request</a></div>
+        <div class="team-groups" id="peopleList"></div>
+      </div>
+
+      <div id="pane-scene" role="tabpanel" aria-labelledby="tab-scene" class="group" hidden>
+        <section class="scard"><h3>ช่วงเวลา</h3><div class="seg" id="timeGrid" role="group" aria-label="ช่วงเวลา"></div><p class="now" id="nowText"></p></section>
+        <section class="scard"><h3>สภาพอากาศ</h3><div class="seg" id="weatherGrid" role="group" aria-label="สภาพอากาศ"></div></section>
+      </div>
+
+      <div id="pane-projects" role="tabpanel" aria-labelledby="tab-projects" class="group" hidden>
+        <h2>โปรเจกต์ที่ทีม Agent รับดูแล</h2>
+        <div class="proj-grid" id="projGrid"></div>
+      </div>
+    </aside>
+  </section>
+
+  <section aria-labelledby="flowTitle">
+    <div class="flow-head">
+      <h2 id="flowTitle">งานของแต่ละฝ่าย</h2>
+      <span class="cap" id="cap"></span>
+    </div>
+    <div class="flow-scroll">
+      <div class="flow" id="flow"></div>
+    </div>
+    <p class="flow-note">ป้าย Gate คืองานที่รอเจ้าของอนุมัติ · เขียนโค้ดพร้อมกันได้ 3 ใบ · merge แล้วรวมรอบละ 10 ใบ QA Lead อนุมัติ staging, QA รัน regression, ผ่านครบ QA Lead deploy production</p>
+  </section>
+
+  <section class="money" aria-labelledby="moneyTitle">
+    <h2 id="moneyTitle">รายรับและรายจ่ายของทีม</h2>
+    <!-- income on the left, expenses on the right (owner, 14 Oct 2026: "แยกชัดเจน ฝั่งรายได้และฝั่งค่าใช้จ่าย") -->
+    <div class="books">
+      <div class="side income" aria-labelledby="incomeTitle">
+        <h3 class="side-h" id="incomeTitle"><i aria-hidden="true">＋</i>รายรับ</h3>
+        <div class="kpis">
+      <div class="kpi"><span>กองเงินสนับสนุนทีม</span><b id="kFund"></b></div>
+        </div>
+        <article class="mcard">
+        <h3>ภารกิจวันนี้</h3>
+        <ul class="missions" id="missions"></ul>
+      </article>
+        <article class="mcard">
+        <h3>ได้รับล่าสุด</h3>
+        <ul class="paid" id="paid"></ul>
+      </article>
+        <article class="mcard">
+        <h3>เงินต่องานตามขนาด</h3>
+        <table class="rt"><tbody id="tiers"></tbody></table>
+        <p class="mnote">ได้เมื่อ issue ปิดในรอบ release หลัง deploy production · เรทจากไฟล์ตั้งค่า</p>
+      </article>
+      </div>
+      <div class="side expense" aria-labelledby="expenseTitle">
+        <h3 class="side-h" id="expenseTitle"><i aria-hidden="true">－</i>รายจ่าย</h3>
+        <div class="kpis">
+      <div class="kpi" id="kDebtBox"><span>ค่าใช้จ่ายด้าน AI ค้างชำระ</span><b id="debtVal"></b></div>
+      <div class="kpi"><span>ชำระค่าใช้จ่ายด้าน AI แล้ว</span><b id="paidOff"></b></div>
+      <div class="kpi"><span>ประหยัดจาก cache</span><b id="saved" class="good"></b></div>
+        </div>
+        <article class="mcard">
+        <h3>ค่าใช้จ่ายออฟฟิศ</h3>
+        <dl class="ledger exp">
+          <dt class="sec">ค่าสาธารณูปโภค</dt><dd class="sec" id="expUtil"></dd>
+          <dt>ไฟฟ้า</dt><dd id="expElec"></dd><dt>น้ำประปา</dt><dd id="expWater"></dd><dt>อินเทอร์เน็ต</dt><dd id="expNet"></dd>
+          <dt class="sec">ค่าเสบียง</dt><dd class="sec" id="expSup"></dd>
+          <dt>อาหาร</dt><dd id="expFood"></dd>
+          <dt class="sec">ค้างชำระ</dt><dd class="sec owe" id="expOwe"></dd>
+        </dl>
+        <p class="mnote">ไฟฟ้าคิดจากนาทีที่ job ของ agent รันจริง · น้ำจากรอบแก้ CI แดง · เน็ตจากวันตามปฏิทิน · เสบียงจากวันทำงานจริงต่อคน · ตัดบิลเที่ยงคืนเวลาไทย Head หักจากกองเงินสนับสนุนทีมอัตโนมัติ · เรทอยู่ในไฟล์ตั้งค่า ดูที่ "ที่มาของค่าใช้จ่าย"</p>
+      </article>
+      <article class="mcard" id="costSources" aria-labelledby="costSrcH">
+        <h3 id="costSrcH">ที่มาของค่าใช้จ่าย</h3>
+        <p class="mnote">Agent คิดเงินจากกิจกรรมจริงบน GitHub เท่านั้น เรทเป็นค่าเกมในไฟล์ตั้งค่า แก้ได้ผ่าน PR · ข้อมูลจริง 1 อย่างคิดเงินได้รายการเดียว ไม่คิดซ้ำ</p>
+        <table class="rt"><tbody id="costMethod"></tbody></table>
+      </article>
+        <article class="mcard">
+        <h3>ค่าใช้จ่ายด้าน AI</h3>
+        <dl class="ledger">
+          <dt>ค่าใช้จ่ายรวม</dt><dd id="costTotal"></dd>
+          <dt>input</dt><dd id="tokIn"></dd>
+          <dt>cache read</dt><dd id="tokCache"></dd>
+          <dt>output</dt><dd id="tokOut"></dd>
+        </dl>
+        <p class="mnote">Head ชำระให้อัตโนมัติทุกครั้งที่มีเงิน</p>
+      </article>
+        <article class="mcard">
+        <h3>ราคา token · <span id="rateModel">ยังไม่มีแหล่งข้อมูล</span></h3>
+        <table class="rt"><tbody id="rateCard"></tbody></table>
+        <p class="fx">1 USD = <b id="fxVal">ยังอ่านอัตราไม่ได้</b> <span class="muted" id="fxWhen"></span></p>
+        <p class="mnote">ราคา USD ต่อล้าน token จากเอกสาร claude-api (6 Oct 2026) · อัตราแลกเปลี่ยนตลาดจาก <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">Rates By Exchange Rate API</a> อัปเดตทุกชั่วโมง · ค่าใช้จ่ายแต่ละช่วงคิดด้วยอัตรา ณ เวลานั้น</p>
+      </article>
+      </div>
+    </div>
+  </section>
+
+  <style>.credits3d{margin:16px 0 0;font-size:13px;color:var(--muted)}.credits3d summary{cursor:pointer;min-height:44px;display:flex;align-items:center}.credits3d ul{margin:4px 0 8px;padding-left:20px;line-height:1.7}.credits3d a{color:var(--accent)}</style>
+  <details class="credits3d">
+    <summary>เครดิตโมเดล 3D</summary>
+    <p>โมเดลยานพาหนะและเรือเหล่านี้ใช้ภายใต้สัญญาอนุญาต Creative Commons Attribution และถูกดัดแปลง (ย่อขยาย หมุน ปรับให้เบาลง เปลี่ยนสีและวัสดุ) ส่วนรถเก๋ง รถ SUV รถกระบะ แท็กซี่ รถตำรวจ รถขายไอศกรีม และเฮลิคอปเตอร์เป็นโมเดล CC0 · <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC-BY 3.0</a></p>
+    <ul>
+      <li>"CAR Model" โดย Ignition Labs · CC-BY 3.0 · <a href="https://poly.pizza/m/5zUWP5UsLg-" target="_blank" rel="noopener">poly.pizza/m/5zUWP5UsLg-</a></li>
+      <li>"Ambulance" โดย Poly by Google · CC-BY 3.0 · <a href="https://poly.pizza/m/beDwEv9UB7x" target="_blank" rel="noopener">poly.pizza/m/beDwEv9UB7x</a></li>
+      <li>"Van" โดย Poly by Google · CC-BY 3.0 · <a href="https://poly.pizza/m/akcsFuPMt3b" target="_blank" rel="noopener">poly.pizza/m/akcsFuPMt3b</a></li>
+      <li>"Ice cream" โดย Poly by Google · CC-BY 3.0 · <a href="https://poly.pizza/m/5eo4Pu8EG-o" target="_blank" rel="noopener">poly.pizza/m/5eo4Pu8EG-o</a></li>
+      <li>"Scooter" โดย Poly by Google · CC-BY 3.0 · <a href="https://poly.pizza/m/eHdEFPwUfCt" target="_blank" rel="noopener">poly.pizza/m/eHdEFPwUfCt</a></li>
+      <li>"Boat" โดย Poly by Google · CC-BY 3.0 · <a href="https://poly.pizza/m/e02dSDtIoo1" target="_blank" rel="noopener">poly.pizza/m/e02dSDtIoo1</a></li>
+      <li>"Car Concept" โดย Eric Chadwick, Darmstadt Graphics Group GmbH · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> · ดัดแปลง (ลบโลโก้ ลดรายละเอียด บีบอัด) · <a href="https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept" target="_blank" rel="noopener">github.com/KhronosGroup/glTF-Sample-Assets</a></li>
+      <li>"Suit" (ชุดสูทผู้หญิง) โดย Quaternius · CC-BY 3.0 · ดัดแปลง (รวมโครงกระดูก ปรับวัสดุ) · <a href="https://poly.pizza/m/sOUciDsoVV" target="_blank" rel="noopener">poly.pizza/m/sOUciDsoVV</a></li>
+      <li>ตัวละครคนอื่น ๆ จาก Ultimate Modular Men และ Women Pack โดย Quaternius · CC0 · <a href="https://poly.pizza/u/Quaternius" target="_blank" rel="noopener">poly.pizza/u/Quaternius</a></li>
+      <li>Motion: Tencent HY-Motion 1.0 (SMPL-H skeleton, non-commercial)</li>
+    </ul>
+  </details>
+
+</div>
+
+<script src="./vendor/gsap@3.12.5/gsap.min.js"></script>
+<script type="importmap">{ "imports": { "three": "./vendor/three@0.170.0/build/three.module.js", "three/addons/": "./vendor/three@0.170.0/examples/jsm/" } }</script>
+<script type="module" src="./app/office.js"></script>
+
+</body></html>

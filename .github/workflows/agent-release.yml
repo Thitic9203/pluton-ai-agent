@@ -1,0 +1,193 @@
+name: Agent release
+
+# The path after merge (docs/superpowers/plans/always-on-dev-agent.md row 12; agent-workflow-and-economy.md
+# section 2b, owner 14 Oct 2026: a batch of 10 approved by the QA Lead, production "QA Lead กดเอง").
+# The rules live in scripts/agent/release.mjs; scripts/agent/release-cli.mjs does the I/O.
+#
+#   staged   CI finished on main. When its `Deploy staging` job succeeded, every open issue whose agent pull
+#            request (head agent/issue-N) is contained in that commit gets agent:on-test-env, then
+#            scripts/staging-smoke.mjs reads the site (GET only) and each issue gets the result.
+#   count    a push to release/next. The issues merged there and not yet on staging are counted; at 10
+#            the QA Lead is told once (label release:batch-ready plus one comment). The step output
+#            qa_lead_message with batch_notify == 'true' is the hook the Slack step of plan section 8 reads.
+#   release  started BY HAND by the QA Lead only (github.triggering_actor == vars.AGENT_QA_LEAD), from main, after
+#            regression passed on staging, with the sha and the Slack link of the result. It dispatches
+#            deploy-production.yml with that sha (whose own checks still refuse a commit staging did not
+#            serve), waits for that run, and closes the round's issues only when it succeeded. No event
+#            ever starts production: CLAUDE.md "Production is not automatic".
+#
+# INERT UNTIL THE OWNER TURNS IT ON: every job needs vars.AGENT_ENABLED, and release also needs
+# vars.AGENT_QA_LEAD. Every job runs on ubuntu-latest (RISK_REGISTER R84, R88) with the workflow token, except
+# the Slack steps of plan row 14 (agent-workflow-and-economy.md section 8): count and release run in the
+# environment staging for its SLACK_BOT_TOKEN and mint an App token with issues: write only, so a thread
+# marker they post is the App's (scripts/agent/slack-notify.mjs).
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [release/next]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: The full commit sha on main that passed regression on staging
+        required: true
+        type: string
+      regression_url:
+        description: The Slack link of the regression result that passed (scripts/e2e-slack-report.mjs)
+        required: true
+        type: string
+
+permissions: {}
+
+# One at a time, none cancelled, so two counts never notify twice and a release is never cut in half.
+concurrency:
+  group: agent-release
+  cancel-in-progress: false
+
+jobs:
+  staged:
+    name: Label staged agent issues and read staging
+    if: vars.AGENT_ENABLED == 'true' && github.event_name == 'workflow_run'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read        # read the CI run's jobs, for Deploy staging
+      pull-requests: read  # find the merged agent pull requests
+      issues: write        # agent:on-test-env and the smoke comment
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: 22.23.2 }
+      - name: Label the issues the deploy staged
+        id: staged
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: node scripts/agent/release-cli.mjs staged
+      # A red smoke fails the job; the comment step still runs after it, so each issue hears the result.
+      - name: Staging smoke
+        id: smoke
+        if: steps.staged.outputs.staged != ''
+        run: node scripts/staging-smoke.mjs
+      - name: Tell each staged issue what the smoke read
+        if: ${{ !cancelled() && steps.staged.outputs.staged != '' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ISSUES: ${{ steps.staged.outputs.staged }}
+          SMOKE_OUTCOME: ${{ steps.smoke.outcome }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: node scripts/agent/release-cli.mjs comment
+
+  count:
+    name: Count release/next and tell the QA Lead at 10
+    if: vars.AGENT_ENABLED == 'true' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: staging   # SLACK_BOT_TOKEN, plan row 14
+    permissions:
+      contents: read
+      pull-requests: read  # the agent pull requests merged into release/next
+      issues: write        # release:batch-ready and the one notice
+    steps:
+      # Main's copy of the scripts, never release/next's: that branch carries agent-written code, and this
+      # job holds issues: write (review of e4f603f69, item 9; the same shape as agent.yml's merge check).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: 22.23.2 }
+      - name: Count the waiting issues
+        id: count
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AGENT_QA_LEAD: ${{ vars.AGENT_QA_LEAD }}
+        run: node scripts/agent/release-cli.mjs count
+      # Slack hook (plan section 8, row 14): at 10 (steps.count.outputs.batch_notify) the QA Lead is
+      # mentioned in each waiting issue's thread. The issue comment keeps the full text, the step
+      # output qa_lead_message; Slack carries the short notice of slack-notify.mjs instead.
+      - name: Mint the App token that posts the thread marker
+        id: app-token
+        if: steps.count.outputs.batch_notify == 'true'
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.AGENT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
+          permission-issues: write
+      - name: Post the release notice in each waiting issue's Slack thread
+        if: steps.count.outputs.batch_notify == 'true'
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          AGENT_APP_LOGIN: ${{ vars.AGENT_APP_SLUG }}[bot]
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_OWNER_ID: ${{ vars.SLACK_OWNER_ID }}
+          SLACK_QA_LEAD_ID: ${{ vars.SLACK_QA_LEAD_ID }}
+          ISSUES: ${{ steps.count.outputs.waiting_issues }}
+          SLACK_EVENT: release
+        run: |
+          failed=0
+          for n in $ISSUES; do
+            node scripts/agent/cli.mjs slack-notify --issue="$n" --event="$SLACK_EVENT" || failed=1
+          done
+          exit "$failed"
+
+  release:
+    name: QA Lead releases the round to production
+    if: >-
+      vars.AGENT_ENABLED == 'true' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+      && vars.AGENT_QA_LEAD != '' && github.triggering_actor == vars.AGENT_QA_LEAD
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: staging   # SLACK_BOT_TOKEN for the done notices, plan row 14
+    permissions:
+      contents: read
+      actions: write       # dispatch deploy-production.yml and read its run
+      pull-requests: read  # the agent pull requests of the round
+      issues: write        # close the round's issues
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: 22.23.2 }
+      - name: Dispatch production, wait for it, close the round
+        id: release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ inputs.sha }}
+          REGRESSION_URL: ${{ inputs.regression_url }}
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          AGENT_QA_LEAD: ${{ vars.AGENT_QA_LEAD }}
+        run: node scripts/agent/release-cli.mjs release
+      - name: Mint the App token that posts the thread marker
+        id: app-token
+        if: steps.release.outputs.closed != ''
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.AGENT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
+          permission-issues: write
+      - name: Post the done notice in each closed issue's Slack thread
+        if: steps.release.outputs.closed != ''
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          AGENT_APP_LOGIN: ${{ vars.AGENT_APP_SLUG }}[bot]
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_OWNER_ID: ${{ vars.SLACK_OWNER_ID }}
+          SLACK_QA_LEAD_ID: ${{ vars.SLACK_QA_LEAD_ID }}
+          ISSUES: ${{ steps.release.outputs.closed }}
+          SLACK_EVENT: done
+        run: |
+          failed=0
+          for n in $ISSUES; do
+            node scripts/agent/cli.mjs slack-notify --issue="$n" --event="$SLACK_EVENT" || failed=1
+          done
+          exit "$failed"

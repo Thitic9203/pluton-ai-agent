@@ -1,0 +1,335 @@
+{
+  "source": "hymotion/v62/index.html",
+  "files": [
+    {
+      "path": "assets/chars/quaternius_m.glb",
+      "bytes": 893888,
+      "sha256": "4a3ad89f7e68977b5a6ba19f085f2a59c042ff730199ce0b50883ad5d4069471",
+      "from": "EMBED_CHAR.quaternius_m (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/chars/quaternius_w.glb",
+      "bytes": 908640,
+      "sha256": "1dcc60dab9d6a7fea0b9321e5b5882ac54b328e00df5b6b1ffd0797ede2d436e",
+      "from": "EMBED_CHAR.quaternius_w (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/chars/xbot.glb",
+      "bytes": 528868,
+      "sha256": "6b8b5c5f3087d40770820f942c12ee140ddea456821ec62a843a0aab8eded544",
+      "from": "EMBED_CHAR.xbot (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/hdr/sky.hdr",
+      "bytes": 1435119,
+      "sha256": "fd94c84997b8a3c353b62c2125a9b44e19509956986a126e472684432a02d798",
+      "from": "EMBED_HDR.sky (application/octet-stream data URI of the mock)"
+    },
+    {
+      "path": "assets/models/modern_coffee_table_01.glb",
+      "bytes": 168000,
+      "sha256": "edacbc870a17c41c8151cab92600061d8e96fd452375eb73c4ab1510f1879804",
+      "from": "EMBED_GLB.modern_coffee_table_01 (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/side_table_01.glb",
+      "bytes": 83876,
+      "sha256": "000123d26415f03830b2a91be7ec4b7704e441b5f97efc6e77226c4fc1d77e2f",
+      "from": "EMBED_GLB.side_table_01 (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_boat_watertaxi.glb",
+      "bytes": 62848,
+      "sha256": "9b979a1a35d3338dfcd40bb7e83763bed4b27fc0d1261dc426bacfe168b6bdd4",
+      "from": "EMBED_VEH.veh_boat_watertaxi (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_car_ambulance.glb",
+      "bytes": 20604,
+      "sha256": "64e393675b6f6ffe21daac2fa5cc06cc33f9cbf8cca8aeaef47a1e8b3cc4e76c",
+      "from": "EMBED_VEH.veh_car_ambulance (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_car_hatchback.glb",
+      "bytes": 67052,
+      "sha256": "dea2bec9f00abb518a043305f09a8418f1e344b1e142426a592f2748d15f7aea",
+      "from": "EMBED_VEH.veh_car_hatchback (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_car_icecream_truck.glb",
+      "bytes": 102880,
+      "sha256": "b31a727b4ec28181d49b88d33d66f8c8a1ca4cb041f031b702725aa4aca0b077",
+      "from": "EMBED_VEH.veh_car_icecream_truck (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_car_parcel_van.glb",
+      "bytes": 62028,
+      "sha256": "be219d495916d19d4bf85e40ffcc89e296ef2720c61630ab2f9d0903e5d8e05b",
+      "from": "EMBED_VEH.veh_car_parcel_van (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_car_pickup.glb",
+      "bytes": 82480,
+      "sha256": "d82f8937f310de934b6ff93006dd53cdeff7e22c0460811ad7de8c31ce49c29c",
+      "from": "EMBED_VEH.veh_car_pickup (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_car_police.glb",
+      "bytes": 69932,
+      "sha256": "bdcc866af9e89af32b4ee412b5e2785819f4c5e8d346f22cbd028ce954f4909c",
+      "from": "EMBED_VEH.veh_car_police (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_car_sedan.glb",
+      "bytes": 62956,
+      "sha256": "0518109ea9451b3d8ae3beadeb897cfa6a952b312884f8355e8cf8de0a2e8bcc",
+      "from": "EMBED_VEH.veh_car_sedan (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_car_supercar.glb",
+      "bytes": 209068,
+      "sha256": "96ff36d6e9851470d12a66b616daeaa473e073058e6929b8b54be22e2d5e5c7c",
+      "from": "EMBED_VEH.veh_car_supercar (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_car_suv.glb",
+      "bytes": 68252,
+      "sha256": "f9d20a5751446ed6ce6a89860c12b00cd628c2d62a9aca40dacc72960fadc3ee",
+      "from": "EMBED_VEH.veh_car_suv (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_car_taxi.glb",
+      "bytes": 67268,
+      "sha256": "f0d6ba733aaccb6a9de859b92dcd06536bb9af2115932033c0f6f160b1a47051",
+      "from": "EMBED_VEH.veh_car_taxi (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_car2_concept.glb",
+      "bytes": 1481368,
+      "sha256": "e29cfe8bf9a31ecd1c03e1e895c2962b50f93bb9e0de2b6f2012f0481fd951d0",
+      "from": "EMBED_VEH.veh_car2_concept (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_heli_civil.glb",
+      "bytes": 22784,
+      "sha256": "f99cb97bbe6a5952598c6b70f0a2df6586f62b3b0e7340026673b8f9a963739d",
+      "from": "EMBED_VEH.veh_heli_civil (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/veh_motorbike_scooter.glb",
+      "bytes": 11660,
+      "sha256": "cd8badce3e16bdb045d12ea156f0dfde13e6718c9ef8173d421d6a2eafa9723c",
+      "from": "EMBED_VEH.veh_motorbike_scooter (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/models/vintage_electric_kettle.glb",
+      "bytes": 209900,
+      "sha256": "7c6edcf1c9466d85506ec40340175c9b7760c81436664b4cd67f5c5859f9597e",
+      "from": "EMBED_GLB.vintage_electric_kettle (model/gltf-binary data URI of the mock)"
+    },
+    {
+      "path": "assets/motion/hymotion-clips.js",
+      "bytes": 399439,
+      "sha256": "ed75995c718fa1f5b22335731856a51b384e3d1bc3aaee97abb62b09d3df3361",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/brushed_metal/brushed_metal_diff.webp",
+      "bytes": 23866,
+      "sha256": "9f18af53d536c56306a7dfcde2a2a408899441136c307d5a7abb961793cd42a4",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/brushed_metal/brushed_metal_nor.webp",
+      "bytes": 2600,
+      "sha256": "da367c4435037bfb29ef98a1ca1d4f0fe12da18825cbdcc29049c9deea6ffbbe",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/brushed_metal/brushed_metal_rough.webp",
+      "bytes": 10662,
+      "sha256": "57be0a23c998a905e99d566b293599563d5b04624aabfa828c7160bf2c297866",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/cream_tile/cream_tile_diff.webp",
+      "bytes": 64684,
+      "sha256": "edb59406ab469687a0e18496ae6d7a5908c10a3c15d4d3438c9835e93f7f3a2b",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/cream_tile/cream_tile_nor.webp",
+      "bytes": 14098,
+      "sha256": "3c13c889e07dea72eef99ae287f3c70905658451645de035a0b78a3e29cec1de",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/cream_tile/cream_tile_rough.webp",
+      "bytes": 12548,
+      "sha256": "e07e192d7fda076cc249d7f2bd9c8451b9a4d41f8f9ee9b439482cb4d59275af",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/foliage/leaf_cluster.webp",
+      "bytes": 42006,
+      "sha256": "35110e264059f2265785036ad4a65f79e821c505d1dff6621db673ed2592c1db",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/foliage/leaf_maple.webp",
+      "bytes": 12668,
+      "sha256": "a67a36c4a613005c0fb0d6dc66a7e40a074bcdcb5d3dc563103593135bd338e7",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/grass/grass_diff.webp",
+      "bytes": 295784,
+      "sha256": "a1dbd68d7db09016ecc5e577148f18cb29338c7c183572e5d8aed22944bfc22c",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/grass/grass_nor.webp",
+      "bytes": 439550,
+      "sha256": "ad61c4aa8543b3ed0058575c3205d42c9fea8b880e88114e98f23bbe4dda6303",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/grass/grass_rough.webp",
+      "bytes": 11194,
+      "sha256": "1dc2ea23f37f58e0ceaa8d6263838e794bef58db6c65435c46078cb327be81b3",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/oak_floor/oak_floor_diff.webp",
+      "bytes": 89396,
+      "sha256": "5d16733a79281387270f7e10467b3972e8d9cdaf8550eb13c45f55e71891b4b1",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/oak_floor/oak_floor_nor.webp",
+      "bytes": 3996,
+      "sha256": "ce963e6fe24aeaf1bbf39847cd68d2ca8e65dc1c7fddb832923f52d3c059464f",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/oak_floor/oak_floor_rough.webp",
+      "bytes": 154898,
+      "sha256": "f1437f227c0f2c3fa88e5dd33b7e04fa7e919b6f78854f46701cd6f6861f0e54",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/pebble_path/pebble_path_diff.webp",
+      "bytes": 152016,
+      "sha256": "560ad63a15143e6688ff65222d440b98e8f2920efd4585dc4b1f47714cf8a3b4",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/pebble_path/pebble_path_nor.webp",
+      "bytes": 277102,
+      "sha256": "f14d08392d65f2b4f1e216631a6902d97b87a35766d49ee6eeb8620cdf327470",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/pebble_path/pebble_path_rough.webp",
+      "bytes": 28536,
+      "sha256": "8b47c8c5ff6f6a652f86ead472fa03f662667bb380092349af2eadd4cb64e967",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/plaster_wall/plaster_wall_diff.webp",
+      "bytes": 176138,
+      "sha256": "2d3ee6a8a1bd563244e324d7a84048601d0ff9193edab8cd9e0f7aa30e979342",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/plaster_wall/plaster_wall_nor.webp",
+      "bytes": 95258,
+      "sha256": "d7729fd29d317fc283db04672dba3723e5af101584dbc5d930df1cea8701a721",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/plaster_wall/plaster_wall_rough.webp",
+      "bytes": 13082,
+      "sha256": "ca8c19680589909e818ed8d70d8a8201b8690d447f5e2effe857638f7ba698f3",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/sofa_fabric/sofa_fabric_diff.webp",
+      "bytes": 297566,
+      "sha256": "6741667ffc797f24e7081c30afc4af8765308e0ca704b86de095427a520a96d3",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/sofa_fabric/sofa_fabric_nor.webp",
+      "bytes": 249458,
+      "sha256": "d7c7cf978b521202c44077b0a029b660a6d25c02e612f660e672880a3713a21d",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/sofa_fabric/sofa_fabric_rough.webp",
+      "bytes": 302006,
+      "sha256": "5a86514e744ac068518c8459ff19c05a0462cc34c7da6a27af02b4541ec29e33",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/tree_bark/tree_bark_diff.webp",
+      "bytes": 225818,
+      "sha256": "6f5f3434bed1220d3346f921fa970711f51a54046db02b99d6519b27c2d85af4",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/tree_bark/tree_bark_nor.webp",
+      "bytes": 260958,
+      "sha256": "9e4007a74236285b55bd79df7db7be613f8c225a6a68105faa0b1c1550c0c868",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/tree_bark/tree_bark_rough.webp",
+      "bytes": 45482,
+      "sha256": "349347b69a6a3186d4c7313c05f3ee27873555794fb82674443ee6af60080a81",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/walnut_dark/walnut_dark_diff.webp",
+      "bytes": 44822,
+      "sha256": "f6d699b39e276465c6ce1289320009295c4c2e98b15b4412914636c8cc96a4d7",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/walnut_dark/walnut_dark_nor.webp",
+      "bytes": 8652,
+      "sha256": "eec3d85a6f0acf61adeaf982d263e08eb1d3248f92d3a9822fd455588690c80d",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/walnut_dark/walnut_dark_rough.webp",
+      "bytes": 14138,
+      "sha256": "5db32b752e8b2d75eda9c6244c23cf8fb328f1fb37b56206c6db332b041c077d",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/water/waternormals.jpg",
+      "bytes": 248813,
+      "sha256": "add9912b158a4fe9c12421745babe68c44c8af75631ac4837236cb2a03bc373f",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/wool_rug/wool_rug_diff.webp",
+      "bytes": 215284,
+      "sha256": "90f8d92e800741943c188c89c7fe93aafab32f5a867e3e198123ca056b6db0de",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/wool_rug/wool_rug_nor.webp",
+      "bytes": 232874,
+      "sha256": "feadc10a13344316d0ba090070e5da36c20200a7dac13733acca7f9798b455ec",
+      "from": "published file of the mock"
+    },
+    {
+      "path": "assets/textures/wool_rug/wool_rug_rough.webp",
+      "bytes": 155622,
+      "sha256": "91870c52afc322d195f5753a304ca950b3203c3390505ae77c10cc4fad8ed65c",
+      "from": "published file of the mock"
+    }
+  ]
+}

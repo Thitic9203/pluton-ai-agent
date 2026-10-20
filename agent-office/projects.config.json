@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "projects": [
+    {
+      "id": "taskfolio",
+      "name": "Taskfolio",
+      "tag": "ครบวงจร",
+      "description": "ดูแลครบวงจร ตั้งแต่รับ feedback วิเคราะห์ความต้องการ พัฒนาและทดสอบ จนส่งมอบขึ้น production",
+      "key": "#{n}",
+      "source": {
+        "kind": "github-labels",
+        "repo": "Thitic9203/pluton-timesheet",
+        "labelPrefix": "agent:",
+        "releaseBranch": "release/next"
+      }
+    },
+    {
+      "id": "ols",
+      "name": "OLS",
+      "tag": "งาน QA · Automate testing",
+      "description": "ดูแลงาน QA ของ ticket ที่มีคุณ Thitichaya เป็น QA Owner: เขียนเทสเคส รีวิวเทสเคส ทดสอบ และรีเทสบัค และดูแล Automate testing ในเรโป ols-qa-e2e: ตรวจเคสที่ยังไม่ passed บน dev แก้ไข รีวิว และเปิด PR",
+      "key": "OLS-{n}",
+      "source": { "kind": "mac-snapshot", "variable": "OLS_BOARD" }
+    }
+  ],
+  "roster": [
+    { "role": "head" },
+    { "role": "po" },
+    { "role": "ba" },
+    { "role": "dev" },
+    { "role": "dev" },
+    { "role": "dev" },
+    { "role": "qa" },
+    { "role": "tl" },
+    { "role": "tl" },
+    { "role": "qal" }
+  ],
+  "roles": {
+    "head": { "label": "Head", "color": "#2f4858", "rank": 1, "duty": "ดูภาพรวม ส่งเรื่องให้เจ้าของตัดสิน ชำระค่าใช้จ่ายด้าน AI", "own": "ตรวจเงินสนับสนุนทีมและค่าใช้จ่ายด้าน AI" },
+    "po": { "label": "PO", "color": "#c76b29", "rank": 2, "duty": "ตัดสินว่าทำอะไรก่อน: เป้าหมาย คุณค่า ลำดับ ขอบเขต และ AC ระดับผลลัพธ์", "own": "จัดลำดับ backlog ใหม่ตามคุณค่า" },
+    "ba": { "label": "BA", "color": "#b5892f", "rank": 3, "duty": "วิเคราะห์ว่าทำอย่างไรให้ตรงความต้องการ: flow กฎธุรกิจ edge case ข้อมูล และผูก AC ให้ตามรอยได้", "own": "ตรวจว่างานที่ขึ้น production แก้ปัญหาได้จริง" },
+    "tl": { "label": "Tech Lead", "color": "#7b4bb3", "rank": 4, "duty": "หยิบ PR ที่เปิดใหม่ รีวิวด้วยสกิล code-review ผ่านแล้ว merge เอง", "own": "ทบทวนความเสี่ยงเชิงสถาปัตย์" },
+    "dev": { "label": "Dev", "color": "#2b7bb9", "rank": 5, "duty": "หยิบงานที่ test plan ผ่าน เขียนโค้ด test-first", "own": "แก้ CI แดงบน branch agent" },
+    "qal": { "label": "QA Lead", "color": "#c2417a", "rank": 6, "duty": "หยิบ plan ที่อนุมัติแล้ว เขียน test plan ผูก AC", "own": "ตรวจว่า AC ทุกข้อมีเทสต์" },
+    "qa": { "label": "QA", "color": "#2a9d6f", "rank": 7, "duty": "หยิบงานที่ขึ้น staging ทดสอบและแนบหลักฐาน", "own": "smoke staging รอบประจำ" }
+  },
+  "prices": {
+    "model": "Claude Opus 5.5",
+    "input": 4,
+    "cacheRead": 0.2,
+    "output": 20,
+    "unit": "USD per 1M tokens",
+    "source": "claude-api skill, cached 6 Oct 2026 (Plan B §6)"
+  },
+  "buildLimit": 3,
+  "buildLimitSource": "Plan A Decisions Q2; scripts/agent/dispatch.mjs LIMIT",
+  "releaseBatch": 10,
+  "releaseBatchSource": "scripts/agent/release.mjs BATCH_SIZE",
+  "economyStart": "2026-10-16",
+  "economyStartSource": "the day AGENT_ENABLED was set to true: gh variable list, 2026-10-16T16:50:30Z (16 Oct 2026 23:50 Asia/Bangkok); spec R66",
+  "tiers": { "S": 300, "M": 800, "L": 2000, "XL": 5000, "source": "Plan B §7.2" },
+  "bonusCapPct": 60,
+  "bonusCapSource": "Plan B §7.3",
+  "bonuses": {
+    "planOnce": 10,
+    "testsOnce": 10,
+    "ciFirstGreen": 15,
+    "reviewOnce": 10,
+    "tokenLean": 15,
+    "noBlock": 5,
+    "paidUp": 5,
+    "source": "Plan B §7.3"
+  },
+  "sizing": {
+    "weights": { "rule": 1, "file": 1, "riskFlag": 5 },
+    "thresholds": { "S": 6, "M": 15, "L": 30 },
+    "budgetTokens": { "S": 1920000, "M": 5240000, "L": 11750000, "XL": 29100000 },
+    "source": "R60; Plan B §2 budget_tokens; decided by the main thread 16 Oct 2026, owner may overrule"
+  },
+  "missions": {
+    "streak": { "3": 300, "7": 1000 },
+    "weeklyXl": 1000,
+    "weeklyNoOvernightDebt": 1000,
+    "daily": { "easy": 200, "medium": 350, "hard": 500 },
+    "dailyDifficulty": { "close2": "hard", "noBlocked": "medium", "cache70": "medium", "payoff": "easy" },
+    "thresholds": { "closesPerDay": 2, "cacheReadPct": 70, "leanTokensPerHour": 300000 },
+    "live": {
+      "order": ["ciFirst", "reviewFirst", "close1", "lean"],
+      "rewards": { "ciFirst": 250, "reviewFirst": 150, "close1": 300, "lean": 200 }
+    },
+    "weekStart": "monday",
+    "source": "Plan B §7.4; owner answers Q18, Q19, Q20 (popup 16 Oct 2026)",
+    "origin": {
+      "streak": "Plan B §7.4 Streak ชำระครบ",
+      "weekly": "Plan B §7.4",
+      "daily": "owner popup 16 Oct 2026",
+      "dailyDifficulty": "mock v61 DAILY reward order (close2 highest, payoff lowest); agent-office lane 16 Oct 2026, owner may overrule",
+      "thresholds": "spec R55 (2 closes, 70%); mock v61 LIVE lean 300k",
+      "live": "owner popup 16 Oct 2026 (hourly fixed rotation); order and rewards from mock v61 LIVE, inside Plan B §7.4 ฿150 to ฿300",
+      "weekStart": "owner popup 16 Oct 2026"
+    }
+  },
+  "office": {
+    "workflows": ["agent.yml", "agent-release.yml", "agent-sweep.yml", "agent-main-audit.yml"],
+    "prices": {
+      "actionsMinute": {
+        "value": 0.006,
+        "unit": "USD per minute",
+        "label": "Linux 2-core x64 (GitHub-hosted runner)",
+        "url": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
+        "fetched": "2026-10-16"
+      },
+      "freeMinutesPerMonth": {
+        "value": 2000,
+        "unit": "minutes per month",
+        "label": "GitHub Free plan, Actions minutes",
+        "url": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+        "fetched": "2026-10-16"
+      },
+      "workersRequestsPerMillion": {
+        "value": 0.3,
+        "unit": "USD per million requests",
+        "label": "Cloudflare Workers paid, additional requests",
+        "url": "https://developers.cloudflare.com/workers/platform/pricing/",
+        "fetched": "2026-10-16"
+      }
+    },
+    "supplies": {
+      "menuFile": "supplies-menu.json",
+      "breakfastBeforeHour": 11,
+      "triggers": {
+        "activeAgentDays": ["breakfast", "lunch/dinner"],
+        "runsStarted": ["drink"],
+        "reviewRuns": ["snack", "dessert"],
+        "issuesClosed": ["dessert"]
+      },
+      "source": "owner, 17 Oct 2026: one meal per working person (breakfast before 11:00), one drink per run, one snack or dessert per review, one dessert per close"
+    }
+  }
+}

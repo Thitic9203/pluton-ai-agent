@@ -1,0 +1,10 @@
+{
+  "name": "pluton-ai-agent",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test scripts/lib/*.test.mjs 'scripts/ols/**/*.test.mjs'"
+  }
+}

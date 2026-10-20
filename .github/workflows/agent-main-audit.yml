@@ -1,0 +1,64 @@
+name: Agent main audit
+
+# The after-the-fact check of main for the always-on dev agent (docs/superpowers/plans/always-on-dev-agent.md,
+# Decision Q3, RISK_REGISTER R82). The App's Contents: write covers main and the repository has no
+# branch protection, so nothing stops the App writing to main directly; this finds it afterwards.
+# A commit of the App that did not come through a merged pull request labels every in-flight agent
+# issue agent:blocked, comments there and fails this run. A commit by an unknown author is listed in
+# the run summary and never blocks (scripts/agent/main-audit.mjs).
+#
+# INERT UNTIL THE OWNER TURNS IT ON. The job carries `if: vars.AGENT_ENABLED == 'true'`, and that
+# repository variable does not exist, so the job is skipped and no runner minute is spent. It is
+# set only after plan rows 4 (the GitHub App), 5 (secrets and the AGENT_APP_SLUG variable) and 6
+# (the runner each round uses, with Q6 on Actions minutes answered) are done. The job runs on
+# ubuntu-latest, like every agent job (RISK_REGISTER R84; main thread decision on PR #496), so it
+# never reaches the owner's Mac and spends Actions minutes only once the agent is on.
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+# Every push is audited: a waiting run is kept, never replaced, and no run on main is cancelled
+# (scripts/lib/workflow-concurrency.mjs).
+concurrency:
+  group: agent-main-audit
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  audit:
+    name: App commits on main came through a merged pull request
+    if: vars.AGENT_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read   # the pull requests of each commit
+      issues: write         # agent:blocked and the comment on in-flight agent issues
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: 22.23.2 }
+      # Reviewer follow-up 6 on 7cf23270f: the stop is written with the App token (issues: write
+      # only), since a label set with the workflow token starts no workflow and slack-label of
+      # agent.yml would never post it. The audit itself still reads with the workflow token.
+      - name: Mint the App token that stops in-flight issues
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.AGENT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
+          permission-issues: write
+      # The audit is the R82 detector, so it runs even when the mint above failed (a rotated key):
+      # the job still ends red on the mint, and stopApi falls back to the workflow token with a
+      # warning that no Slack notice follows (review of e03b077f7, claim 5).
+      - name: Audit the pushed commits
+        if: ${{ !cancelled() }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AGENT_STOP_TOKEN: ${{ steps.app-token.outputs.token }}
+          AGENT_APP_LOGIN: ${{ vars.AGENT_APP_SLUG }}[bot]
+        run: node scripts/agent/cli.mjs main-audit

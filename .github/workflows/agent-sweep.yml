@@ -1,0 +1,55 @@
+name: Agent sweep
+
+# The blind-spot sweep of the agent team (docs/superpowers/plans/agent-workflow-and-economy.md section 2c;
+# always-on-dev-agent.md row 16; DECISION_LOG "Agent Office: pro render and motion sources, and the
+# blind-spot sweep's filing rules", 14 Oct 2026). Once a day each role looks for blind spots in its own
+# scope and files an [Improvement] issue for what it finds, labelled self-filed and never agent:ready,
+# under the caps of scripts/agent/sweep.mjs: one open per role, five for the team, three new per run.
+# The owner gave standing permission for this filing (popup, 14 Oct 2026, "อนุญาตถาวร มีเพดาน") and chose
+# once a day ("วันละครั้ง") stacked on PR #496 ("ต่อจาก #496 เลย").
+#
+# INERT UNTIL THE OWNER TURNS IT ON. The job needs both vars.AGENT_ENABLED (the agent as a whole, set only
+# after plan rows 4 to 6 and Q6 on Actions minutes) and vars.AGENT_SWEEP_ENABLED; neither exists, so the
+# job is skipped and no runner minute is spent. It runs on ubuntu-latest, like every agent job (RISK_REGISTER
+# R84; main thread decision on PR #496), with the workflow token only: it reads the checkout and writes
+# issues, nothing else. When vars.AGENT_AI_COST_UNPAID is 'true' it stops before reading anything (plan
+# section 2c item 7). A manual dispatch is a dry run by default, which writes nothing and prints the plan;
+# untick dry_run to file by hand. A scheduled run has no inputs, so it files.
+on:
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print what would be filed, write nothing'
+        type: boolean
+        default: true
+
+permissions: {}
+
+# One sweep at a time, so two runs never count the caps against each other; none is cancelled.
+concurrency:
+  group: agent-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    name: Blind-spot sweep files capped self-filed improvements
+    if: vars.AGENT_ENABLED == 'true' && vars.AGENT_SWEEP_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write   # file the self-filed issue, its label and the duplicate comment
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: 22.23.2 }
+      - name: Sweep and file
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AGENT_SWEEP_FILE: ${{ inputs.dry_run && '0' || '1' }}
+          AGENT_AI_COST_UNPAID: ${{ vars.AGENT_AI_COST_UNPAID }}
+        run: node scripts/agent/cli.mjs sweep

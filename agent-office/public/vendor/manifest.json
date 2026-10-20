@@ -1,0 +1,205 @@
+{
+  "files": [
+    {
+      "path": "vendor/three@0.170.0/build/three.module.js",
+      "bytes": 1314681,
+      "sha256": "ce1fa418de16a19495a9f72495580e3015d7745c296d3ce0485897f902ddedfb",
+      "from": "npm three@0.170.0 package/build/three.module.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/controls/OrbitControls.js",
+      "bytes": 32134,
+      "sha256": "80efaadea4f8a636a65fb0bd08bfef62f3d93a0bb94e2e7500f23176c5c07f4e",
+      "from": "npm three@0.170.0 package/examples/jsm/controls/OrbitControls.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/environments/RoomEnvironment.js",
+      "bytes": 3606,
+      "sha256": "85869bdd22f7cf0b22e68dcefe6cb710480af0f5c901a76f7a7764fd07fc8014",
+      "from": "npm three@0.170.0 package/examples/jsm/environments/RoomEnvironment.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/libs/meshopt_decoder.module.js",
+      "bytes": 24850,
+      "sha256": "01f48524f4bac6141eaba07e94cc36e7ee56f311796fa6117c159842941b0468",
+      "from": "npm three@0.170.0 package/examples/jsm/libs/meshopt_decoder.module.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/loaders/GLTFLoader.js",
+      "bytes": 110273,
+      "sha256": "45139faddd5aaf48ed2d62203d976e5cbd703db1a592de40527f9f6cf58abd44",
+      "from": "npm three@0.170.0 package/examples/jsm/loaders/GLTFLoader.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/loaders/RGBELoader.js",
+      "bytes": 11377,
+      "sha256": "f0e87d0008d9484d31358b32befd1bf80e4301f77573cc9a7cf7d871cc3f64b4",
+      "from": "npm three@0.170.0 package/examples/jsm/loaders/RGBELoader.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/math/SimplexNoise.js",
+      "bytes": 14351,
+      "sha256": "9b8d541b77b0ddc79afaa6a1de8941452c191b8b9006f04e7b8fc422e2b263f7",
+      "from": "npm three@0.170.0 package/examples/jsm/math/SimplexNoise.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/objects/Sky.js",
+      "bytes": 6819,
+      "sha256": "eacd17d5debec3b909d1208304d70024a59c38c58b6533fcd4711f8a6a0b63bc",
+      "from": "npm three@0.170.0 package/examples/jsm/objects/Sky.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/postprocessing/EffectComposer.js",
+      "bytes": 4651,
+      "sha256": "d234e578618fa816955ebdc059c049c577e203e650e33cf22bde3f232c29e669",
+      "from": "npm three@0.170.0 package/examples/jsm/postprocessing/EffectComposer.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/postprocessing/GTAOPass.js",
+      "bytes": 16582,
+      "sha256": "980b036767c439cf2aadd0e869b2e51b2ec00736a75a5ad1bb69dddb03254fe8",
+      "from": "npm three@0.170.0 package/examples/jsm/postprocessing/GTAOPass.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/postprocessing/MaskPass.js",
+      "bytes": 2231,
+      "sha256": "328cf7db0da5d9be83ffe39d54b01d5ac1fddf108cc98182ddbb056f5c8b537f",
+      "from": "npm three@0.170.0 package/examples/jsm/postprocessing/MaskPass.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/postprocessing/OutputPass.js",
+      "bytes": 2524,
+      "sha256": "32f879d2179087676631c799857a885586b3cdd13b9731bd3b13f06428bd58b7",
+      "from": "npm three@0.170.0 package/examples/jsm/postprocessing/OutputPass.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/postprocessing/Pass.js",
+      "bytes": 1706,
+      "sha256": "b3c6128340eaa37e40a6a2f1b738e894c855239417d50959759b34a2b5e89f92",
+      "from": "npm three@0.170.0 package/examples/jsm/postprocessing/Pass.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/postprocessing/RenderPass.js",
+      "bytes": 1941,
+      "sha256": "6c9b8a539ea16e898f65e4760f14937ef9ea94043bd9842c141e0301f41903e8",
+      "from": "npm three@0.170.0 package/examples/jsm/postprocessing/RenderPass.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/postprocessing/SMAAPass.js",
+      "bytes": 49467,
+      "sha256": "f3508e3e17f40c1358921b5c7eb3ab60460d97b06fdadf6b0d40b52d3842c44a",
+      "from": "npm three@0.170.0 package/examples/jsm/postprocessing/SMAAPass.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/postprocessing/ShaderPass.js",
+      "bytes": 1576,
+      "sha256": "3b28a1ee27e0eb96c0eab137a1f442ccf127a926904eced2d51e125ec44af781",
+      "from": "npm three@0.170.0 package/examples/jsm/postprocessing/ShaderPass.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/postprocessing/UnrealBloomPass.js",
+      "bytes": 12410,
+      "sha256": "3bd23a1097af75c7002d0ffc21a6c14f45c4dd701dbaf737030dfc61fb7c64d9",
+      "from": "npm three@0.170.0 package/examples/jsm/postprocessing/UnrealBloomPass.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/shaders/CopyShader.js",
+      "bytes": 571,
+      "sha256": "4e3346db194db56a596cd074e9bdb39fb5eb52040c333e0d29dc4eb1324d3b1d",
+      "from": "npm three@0.170.0 package/examples/jsm/shaders/CopyShader.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/shaders/GTAOShader.js",
+      "bytes": 12990,
+      "sha256": "e1f5dd89bca4ee679a4aca50c3ef3513926be71f6860c38e31a62cc9d7120b39",
+      "from": "npm three@0.170.0 package/examples/jsm/shaders/GTAOShader.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/shaders/LuminosityHighPassShader.js",
+      "bytes": 1147,
+      "sha256": "9f4866f9abb2d96fd83eec46ba4bf2165b22155a7a37ff425c0f60eba18007cb",
+      "from": "npm three@0.170.0 package/examples/jsm/shaders/LuminosityHighPassShader.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/shaders/OutputShader.js",
+      "bytes": 1490,
+      "sha256": "4944cecd49c0d4d1520a4d927bde8a590fd43f041ee913252b9451855a01d0f0",
+      "from": "npm three@0.170.0 package/examples/jsm/shaders/OutputShader.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/shaders/PoissonDenoiseShader.js",
+      "bytes": 6614,
+      "sha256": "3dab419b23529f8fd59e2713458502f9f51d2dd3af3e1285dc671fcc451d49fb",
+      "from": "npm three@0.170.0 package/examples/jsm/shaders/PoissonDenoiseShader.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/shaders/SMAAShader.js",
+      "bytes": 14628,
+      "sha256": "3c7e942a25cb09dd431e395e6e91904715a834b2a6e62ec0b9b77c2f8655c369",
+      "from": "npm three@0.170.0 package/examples/jsm/shaders/SMAAShader.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/utils/BufferGeometryUtils.js",
+      "bytes": 31768,
+      "sha256": "c25b7930e570e9ec56173cd3b866ec8d2e10016630db3937efb439daf1cedbf6",
+      "from": "npm three@0.170.0 package/examples/jsm/utils/BufferGeometryUtils.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/three@0.170.0/examples/jsm/utils/SkeletonUtils.js",
+      "bytes": 8802,
+      "sha256": "ee412be1aa05f3051c2bda8ea89612c1ba70c5c87de62b56040282120d5eb991",
+      "from": "npm three@0.170.0 package/examples/jsm/utils/SkeletonUtils.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/gsap@3.12.5/gsap.min.js",
+      "bytes": 72214,
+      "sha256": "28033e449a31ebcc396e5be8b13b63152bf03094288fb5867034321927bce087",
+      "from": "npm gsap@3.12.5 package/dist/gsap.min.js",
+      "edits": []
+    },
+    {
+      "path": "vendor/firebase@12.19.0/firebase-app.js",
+      "bytes": 106517,
+      "sha256": "b4e6359ec15648bff062dd1b6697b764ee66ba99f14e4f6d704390353dc5e870",
+      "from": "npm firebase@12.19.0 package/firebase-app.js",
+      "edits": [
+        "removed the sourceMappingURL comment (the map is not shipped)"
+      ]
+    },
+    {
+      "path": "vendor/firebase@12.19.0/firebase-auth.js",
+      "bytes": 157030,
+      "sha256": "ed36687bda5ba3337dc7af5451f72cf53cac044139cc255ad8c31cc1e52492b2",
+      "from": "npm firebase@12.19.0 package/firebase-auth.js",
+      "edits": [
+        "import of https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js pointed at ./firebase-app.js",
+        "removed the sourceMappingURL comment (the map is not shipped)"
+      ]
+    }
+  ]
+}
