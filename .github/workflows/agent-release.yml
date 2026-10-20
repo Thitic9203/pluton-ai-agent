@@ -21,13 +21,16 @@ name: Agent release
 # the Slack steps of plan row 14 (agent-workflow-and-economy.md section 8): count and release run in the
 # environment staging for its SLACK_BOT_TOKEN and mint an App token with issues: write only, so a thread
 # marker they post is the App's (scripts/agent/slack-notify.mjs).
+#
+# Repo split (docs/sdd/repo-split/spec.md R15 to R21): the CI run on pluton-timesheet main and the update of
+# its release/next arrive relayed as repository_dispatch (ts-ci-main-completed with the run id,
+# ts-release-next); `cli.mjs event` rebuilds the run from the pluton-timesheet API, and staged takes the run
+# id and the head sha from that, never from the payload. Every call to pluton-timesheet uses an App token
+# that asks for what the workflow token had there; staged and release check it out for git ancestry and
+# scripts/staging-smoke.mjs, and run this repository's scripts from a copy outside that tree.
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [main]
-  push:
-    branches: [release/next]
+  repository_dispatch:
+    types: [ts-ci-main-completed, ts-release-next]
   workflow_dispatch:
     inputs:
       sha:
@@ -41,6 +44,9 @@ on:
 
 permissions: {}
 
+env:
+  PRODUCT_REPO: Thitic9203/pluton-timesheet
+
 # One at a time, none cancelled, so two counts never notify twice and a release is never cut in half.
 concurrency:
   group: agent-release
@@ -49,28 +55,55 @@ concurrency:
 jobs:
   staged:
     name: Label staged agent issues and read staging
-    if: vars.AGENT_ENABLED == 'true' && github.event_name == 'workflow_run'
+    if: vars.AGENT_ENABLED == 'true' && github.event_name == 'repository_dispatch' && github.event.action == 'ts-ci-main-completed'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       contents: read
-      actions: read        # read the CI run's jobs, for Deploy staging
-      pull-requests: read  # find the merged agent pull requests
-      issues: write        # agent:on-test-env and the smoke comment
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
+      - name: Keep this repository's scripts outside the product tree
+        run: |
+          mkdir -p "$RUNNER_TEMP/pluton-ai-agent"
+          cp -R scripts "$RUNNER_TEMP/pluton-ai-agent/"
+      - name: Mint the App token for pluton-timesheet
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.AGENT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
+          owner: Thitic9203
+          repositories: pluton-timesheet
+          permission-contents: read
+          permission-actions: read        # read the CI run's jobs, for Deploy staging
+          permission-pull-requests: read  # find the merged agent pull requests
+          permission-issues: write        # agent:on-test-env and the smoke comment
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: Thitic9203/pluton-timesheet
+          ref: main
+          token: ${{ steps.app-token.outputs.token }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with: { node-version: 22.23.2 }
+      # Spec repo-split R16: the run is read from the API by its id; an id that is not a finished CI run
+      # of an update of main prints empty outputs and nothing is staged.
+      - name: Read the CI run from pluton-timesheet
+        id: event
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: node "$RUNNER_TEMP/pluton-ai-agent/scripts/agent/cli.mjs" event
       - name: Label the issues the deploy staged
         id: staged
+        if: steps.event.outputs.action == 'completed' && steps.event.outputs.branch == 'main'
         env:
-          GITHUB_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-        run: node scripts/agent/release-cli.mjs staged
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          RUN_ID: ${{ steps.event.outputs.run_id }}
+          HEAD_SHA: ${{ steps.event.outputs.sha }}
+        run: node "$RUNNER_TEMP/pluton-ai-agent/scripts/agent/release-cli.mjs" staged
       # A red smoke fails the job; the comment step still runs after it, so each issue hears the result.
       - name: Staging smoke
         id: smoke
@@ -79,35 +112,45 @@ jobs:
       - name: Tell each staged issue what the smoke read
         if: ${{ !cancelled() && steps.staged.outputs.staged != '' }}
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           ISSUES: ${{ steps.staged.outputs.staged }}
           SMOKE_OUTCOME: ${{ steps.smoke.outcome }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-        run: node scripts/agent/release-cli.mjs comment
+          HEAD_SHA: ${{ steps.event.outputs.sha }}
+        run: node "$RUNNER_TEMP/pluton-ai-agent/scripts/agent/release-cli.mjs" comment
 
   count:
     name: Count release/next and tell the QA Lead at 10
-    if: vars.AGENT_ENABLED == 'true' && github.event_name == 'push'
+    if: vars.AGENT_ENABLED == 'true' && github.event_name == 'repository_dispatch' && github.event.action == 'ts-release-next'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: staging   # SLACK_BOT_TOKEN, plan row 14
     permissions:
       contents: read
-      pull-requests: read  # the agent pull requests merged into release/next
-      issues: write        # release:batch-ready and the one notice
     steps:
       # Main's copy of the scripts, never release/next's: that branch carries agent-written code, and this
       # job holds issues: write (review of e4f603f69, item 9; the same shape as agent.yml's merge check).
+      # After the split the scripts are this repository's main; release/next is never checked out.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with: { node-version: 22.23.2 }
+      # Spec repo-split R17: what the workflow token had on pluton-timesheet before the split.
+      - name: Mint the App token that counts and labels
+        id: count-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.AGENT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
+          owner: Thitic9203
+          repositories: pluton-timesheet
+          permission-contents: read
+          permission-pull-requests: read  # the agent pull requests merged into release/next
+          permission-issues: write        # release:batch-ready and the one notice
       - name: Count the waiting issues
         id: count
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ steps.count-token.outputs.token }}
           AGENT_QA_LEAD: ${{ vars.AGENT_QA_LEAD }}
         run: node scripts/agent/release-cli.mjs count
       # Slack hook (plan section 8, row 14): at 10 (steps.count.outputs.batch_notify) the QA Lead is
@@ -120,6 +163,8 @@ jobs:
         with:
           client-id: ${{ vars.AGENT_APP_CLIENT_ID }}
           private-key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
+          owner: Thitic9203
+          repositories: pluton-timesheet
           permission-issues: write
       - name: Post the release notice in each waiting issue's Slack thread
         if: steps.count.outputs.batch_notify == 'true'
@@ -148,12 +193,33 @@ jobs:
     environment: staging   # SLACK_BOT_TOKEN for the done notices, plan row 14
     permissions:
       contents: read
-      actions: write       # dispatch deploy-production.yml and read its run
-      pull-requests: read  # the agent pull requests of the round
-      issues: write        # close the round's issues
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
+      - name: Keep this repository's scripts outside the product tree
+        run: |
+          mkdir -p "$RUNNER_TEMP/pluton-ai-agent"
+          cp -R scripts "$RUNNER_TEMP/pluton-ai-agent/"
+      # Spec repo-split R17: what the workflow token had on pluton-timesheet before the split. The App
+      # now dispatches deploy-production.yml, so the run is found by the App's login (R21).
+      - name: Mint the App token that releases the round
+        id: release-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.AGENT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
+          owner: Thitic9203
+          repositories: pluton-timesheet
+          permission-contents: read
+          permission-actions: write       # dispatch deploy-production.yml and read its run
+          permission-pull-requests: read  # the agent pull requests of the round
+          permission-issues: write        # close the round's issues
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: Thitic9203/pluton-timesheet
+          ref: main
+          token: ${{ steps.release-token.outputs.token }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
@@ -161,12 +227,13 @@ jobs:
       - name: Dispatch production, wait for it, close the round
         id: release
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ steps.release-token.outputs.token }}
+          AGENT_APP_LOGIN: ${{ vars.AGENT_APP_SLUG }}[bot]
           RELEASE_SHA: ${{ inputs.sha }}
           REGRESSION_URL: ${{ inputs.regression_url }}
           TRIGGERING_ACTOR: ${{ github.triggering_actor }}
           AGENT_QA_LEAD: ${{ vars.AGENT_QA_LEAD }}
-        run: node scripts/agent/release-cli.mjs release
+        run: node "$RUNNER_TEMP/pluton-ai-agent/scripts/agent/release-cli.mjs" release
       - name: Mint the App token that posts the thread marker
         id: app-token
         if: steps.release.outputs.closed != ''
@@ -174,6 +241,8 @@ jobs:
         with:
           client-id: ${{ vars.AGENT_APP_CLIENT_ID }}
           private-key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
+          owner: Thitic9203
+          repositories: pluton-timesheet
           permission-issues: write
       - name: Post the done notice in each closed issue's Slack thread
         if: steps.release.outputs.closed != ''
@@ -188,6 +257,6 @@ jobs:
         run: |
           failed=0
           for n in $ISSUES; do
-            node scripts/agent/cli.mjs slack-notify --issue="$n" --event="$SLACK_EVENT" || failed=1
+            node "$RUNNER_TEMP/pluton-ai-agent/scripts/agent/cli.mjs" slack-notify --issue="$n" --event="$SLACK_EVENT" || failed=1
           done
           exit "$failed"

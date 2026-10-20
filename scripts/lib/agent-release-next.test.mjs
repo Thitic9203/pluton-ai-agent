@@ -117,9 +117,15 @@ test('agent.yml: the merge step runs only after the merge check said ok, with it
   const job = jobsOf(agentYml).get('merge-check');
   const steps = stepsOf(job);
   const check = steps.findIndex((s) => /^\s*run: node scripts\/agent\/cli\.mjs merge-check$/m.test(s));
-  const mint = steps.findIndex((s) => /uses: actions\/create-github-app-token@/.test(s));
+  const mint = steps.findIndex((s) => /uses: actions\/create-github-app-token@/.test(s) && /^\s*id: app-token$/m.test(s));
   const merge = steps.findIndex((s) => /^\s*run: node scripts\/agent\/cli\.mjs release-merge$/m.test(s));
   assert.ok(check > 0 && mint > check && merge > mint, 'check, then mint, then merge');
+  // docs/sdd/repo-split/spec.md R17: the check reads and reports with an App token holding the
+  // workflow token's former permissions on pluton-timesheet, which cannot merge.
+  const checkToken = steps.findIndex((s) => /^\s*id: check-token$/m.test(s));
+  assert.ok(checkToken >= 0 && checkToken < check, 'the check token is minted before the check');
+  assert.doesNotMatch(steps[checkToken], /permission-contents: write/);
+  assert.match(steps[check], /^\s+GITHUB_TOKEN: \$\{\{ steps\.check-token\.outputs\.token \}\}$/m);
   assert.match(steps[check], /^\s*id: check$/m);
   for (const i of [mint, merge]) assert.match(steps[i], /^\s*if: steps\.check\.outputs\.ok == 'true'$/m);
   assert.match(steps[mint], /^\s+permission-contents: write$/m);
@@ -127,7 +133,7 @@ test('agent.yml: the merge step runs only after the merge check said ok, with it
   assert.doesNotMatch(steps[mint], /permission-(issues|checks|statuses|workflows|administration)/);
   assert.match(steps[merge], /^\s+AGENT_MERGE_TOKEN: \$\{\{ steps\.app-token\.outputs\.token \}\}$/m);
   assert.match(steps[merge], /^\s+AGENT_MERGE_SHA: \$\{\{ steps\.check\.outputs\.sha \}\}$/m);
-  assert.match(steps[merge], /^\s+GITHUB_TOKEN: \$\{\{ github\.token \}\}$/m);
+  assert.match(steps[merge], /^\s+GITHUB_TOKEN: \$\{\{ steps\.check-token\.outputs\.token \}\}$/m);
   // The workflow token of the job still cannot merge: the merge needs the App token.
   assert.match(job, /^ {6}contents: read$/m);
   assert.doesNotMatch(job, /^ {6}contents: write$/m);

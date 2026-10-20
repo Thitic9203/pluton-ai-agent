@@ -64,7 +64,9 @@ for (const a of ACTION_STEPS) {
     assert.ok(copy > 0, 'the copy step exists');
     const checkouts = steps.map((s, i) => [s, i]).filter(([s]) => s.includes('uses: actions/checkout@')).map(([, i]) => i);
     assert.ok(checkouts[0] < copy, 'after the first checkout');
-    assert.match(steps[checkouts[0]], /ref: \$\{\{ github\.event\.repository\.default_branch \}\}/, 'the first checkout is main');
+    // docs/sdd/repo-split/spec.md R19: the first checkout is this repository at its default branch (a
+    // dispatch runs there, so no ref), and pluton-timesheet is checked out only after the copy.
+    assert.doesNotMatch(steps[checkouts[0]], /repository:|ref:/, 'the first checkout is main of this repository');
     for (const later of checkouts.slice(1)) assert.ok(copy < later, 'before any other checkout (the agent branch)');
     assert.ok(copy < steps.findIndex((s) => s.includes(ACTION)), 'before the action');
     assert.equal(field(steps[copy], 'if'), undefined, 'it always runs');
@@ -166,12 +168,14 @@ test('R50: the usage job posts both lines on a fresh runner with an issues-only 
   assert.match(c, /^ {4}needs: \[dispatch, agent, review\]$/m);
   assert.match(c, /^ {4}if: vars\.AGENT_ENABLED == 'true' && always\(\) && \(needs\.agent\.outputs\.usage_work != '' \|\| needs\.review\.outputs\.usage_review != ''\)$/m);
   assert.match(c, /^ {4}runs-on: ubuntu-latest$/m);
-  assert.match(c, /^ {4}permissions: \{\}$/m);
+  // docs/sdd/repo-split/spec.md R1, R19: pluton-ai-agent is private, so checking out its main needs
+  // contents: read for the workflow token; nothing else, and no ref (a dispatch runs on main).
+  assert.match(c, /^ {4}permissions:\n {6}contents: read\n {4}steps:/m);
   const steps = stepsOf(job);
   assert.equal(steps.length, 4);
   const [checkout, node, mint, post] = steps;
   assert.match(checkout, /uses: actions\/checkout@[0-9a-f]{40}/);
-  assert.match(checkout, /ref: \$\{\{ github\.event\.repository\.default_branch \}\}/);
+  assert.doesNotMatch(checkout, /repository:|ref:/);
   assert.match(checkout, /persist-credentials: false/);
   assert.match(node, /uses: actions\/setup-node@[0-9a-f]{40}/);
   assert.match(mint, /uses: actions\/create-github-app-token@[0-9a-f]{40}/);
@@ -183,7 +187,7 @@ test('R50: the usage job posts both lines on a fresh runner with an issues-only 
   assert.match(post, /REVIEW_SHA: \$\{\{ needs\.review\.outputs\.head_sha \}\}/);
   assert.match(post, /ISSUE: \$\{\{ needs\.dispatch\.outputs\.issue \}\}/);
   assert.match(post, /checked=\$\(GH_TOKEN= node scripts\/agent\/cli\.mjs usage-check "\$step" "\$line" "\$sha"\)/);
-  assert.match(post, /gh issue comment "\$ISSUE" --repo "\$GITHUB_REPOSITORY" --body "\$checked"/);
+  assert.match(post, /gh issue comment "\$ISSUE" --repo "\$PRODUCT_REPO" --body "\$checked"/);
   assert.equal(/continue-on-error|\|\|/.test(post + mint), false, 'nothing lets a red step pass');
   // The review job hands on the head it read from GitHub (N3).
   assert.ok(code(jobsOf(YAML).get('review')).includes('head_sha: ${{ steps.head.outputs.sha }}'));

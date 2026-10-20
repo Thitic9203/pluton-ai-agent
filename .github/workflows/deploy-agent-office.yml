@@ -72,10 +72,15 @@ on:
       - src/services/accountStatus.ts
       - src/services/jiraCors.ts
       - .github/workflows/deploy-agent-office.yml
-  issues:
-    types: [opened, labeled, unlabeled, closed, reopened]
+  # Repo split (docs/sdd/repo-split/spec.md R15, R17, R18): pluton-timesheet's issue events and its
+  # Deploy production runs arrive relayed as repository_dispatch (ts-issues, ts-deploy-production); the
+  # agent workflows now live in this repository, so their workflow_run stays. A refresh only rebuilds the
+  # snapshot from the API, so no decision is taken from a payload. The `paths:` above that name product
+  # files and the jobs' `vars.RUNNER` and runner-power steps are open question 1 of that spec, not decided here.
+  repository_dispatch:
+    types: [ts-issues, ts-deploy-production]
   workflow_run:
-    workflows: [Agent, Agent release, Agent sweep, Deploy production]
+    workflows: [Agent, Agent release, Agent sweep]
     types: [completed]
   workflow_dispatch:
     inputs:
@@ -91,6 +96,9 @@ on:
 
 permissions:
   contents: read
+
+env:
+  PRODUCT_REPO: Thitic9203/pluton-timesheet
 
 jobs:
   verify:
@@ -238,10 +246,25 @@ jobs:
           VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
           VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
         run: node scripts/agent-office-config.mjs staging "$GITHUB_SHA"
+      # Spec repo-split R17: the board reads pluton-timesheet, which this repository's workflow token
+      # cannot; the App token asks for the read scopes of this job. Open question 4 of that spec.
+      - name: Mint the read-only App token the snapshot reads with
+        id: snapshot-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.AGENT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
+          owner: Thitic9203
+          repositories: pluton-timesheet
+          permission-contents: read
+          permission-issues: read
+          permission-pull-requests: read
+          permission-actions: read
+          permission-checks: read
       - name: Build the board snapshot from GitHub
         timeout-minutes: 3
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ steps.snapshot-token.outputs.token }}
           AGENT_ENABLED: ${{ vars.AGENT_ENABLED }}
           AGENT_APP_LOGIN: ${{ vars.AGENT_APP_SLUG }}[bot]
           CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_TOKEN_STAGING }}
@@ -340,10 +363,25 @@ jobs:
           VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
           VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
         run: node scripts/agent-office-config.mjs prod "$SHA"
+      # Spec repo-split R17: the board reads pluton-timesheet, which this repository's workflow token
+      # cannot; the App token asks for the read scopes of this job. Open question 4 of that spec.
+      - name: Mint the read-only App token the snapshot reads with
+        id: snapshot-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.AGENT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
+          owner: Thitic9203
+          repositories: pluton-timesheet
+          permission-contents: read
+          permission-issues: read
+          permission-pull-requests: read
+          permission-actions: read
+          permission-checks: read
       - name: Build the board snapshot from GitHub
         timeout-minutes: 3
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ steps.snapshot-token.outputs.token }}
           AGENT_ENABLED: ${{ vars.AGENT_ENABLED }}
           AGENT_APP_LOGIN: ${{ vars.AGENT_APP_SLUG }}[bot]
           CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_TOKEN_PROD }}
@@ -382,9 +420,10 @@ jobs:
     timeout-minutes: 34
     if: >-
       github.ref == 'refs/heads/main'
-      && ((github.event_name == 'issues'
-           && (github.event.action == 'opened' || github.event.action == 'closed' || github.event.action == 'reopened'
-               || startsWith(github.event.label.name, 'agent:') || startsWith(github.event.label.name, 'release:')))
+      && ((github.event_name == 'repository_dispatch' && github.event.action == 'ts-issues'
+           && (github.event.client_payload.action == 'opened' || github.event.client_payload.action == 'closed' || github.event.client_payload.action == 'reopened'
+               || startsWith(github.event.client_payload.label, 'agent:') || startsWith(github.event.client_payload.label, 'release:')))
+          || (github.event_name == 'repository_dispatch' && github.event.action == 'ts-deploy-production')
           || github.event_name == 'workflow_run'
           || (github.event_name == 'workflow_dispatch' && inputs.target == 'refresh'))
     environment: staging
@@ -496,12 +535,28 @@ jobs:
           VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
           VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
         run: node scripts/agent-office-config.mjs staging "$SHA"
+      # Spec repo-split R17: the board reads pluton-timesheet, which this repository's workflow token
+      # cannot; the App token asks for the read scopes of this job. Open question 4 of that spec.
+      - name: Mint the read-only App token the snapshot reads with
+        id: snapshot-token
+        if: steps.serving.outputs.sha != ''
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.AGENT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
+          owner: Thitic9203
+          repositories: pluton-timesheet
+          permission-contents: read
+          permission-issues: read
+          permission-pull-requests: read
+          permission-actions: read
+          permission-checks: read
       - name: Build the board snapshot from GitHub
         if: steps.serving.outputs.sha != ''
         timeout-minutes: 3
         working-directory: site
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ steps.snapshot-token.outputs.token }}
           AGENT_ENABLED: ${{ vars.AGENT_ENABLED }}
           AGENT_APP_LOGIN: ${{ vars.AGENT_APP_SLUG }}[bot]
           CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_TOKEN_STAGING }}
@@ -572,9 +627,10 @@ jobs:
     timeout-minutes: 34
     if: >-
       github.ref == 'refs/heads/main'
-      && ((github.event_name == 'issues'
-           && (github.event.action == 'opened' || github.event.action == 'closed' || github.event.action == 'reopened'
-               || startsWith(github.event.label.name, 'agent:') || startsWith(github.event.label.name, 'release:')))
+      && ((github.event_name == 'repository_dispatch' && github.event.action == 'ts-issues'
+           && (github.event.client_payload.action == 'opened' || github.event.client_payload.action == 'closed' || github.event.client_payload.action == 'reopened'
+               || startsWith(github.event.client_payload.label, 'agent:') || startsWith(github.event.client_payload.label, 'release:')))
+          || (github.event_name == 'repository_dispatch' && github.event.action == 'ts-deploy-production')
           || github.event_name == 'workflow_run'
           || (github.event_name == 'workflow_dispatch' && inputs.target == 'refresh'))
     environment: production
@@ -682,12 +738,28 @@ jobs:
           VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
           VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
         run: node scripts/agent-office-config.mjs prod "$SHA"
+      # Spec repo-split R17: the board reads pluton-timesheet, which this repository's workflow token
+      # cannot; the App token asks for the read scopes of this job. Open question 4 of that spec.
+      - name: Mint the read-only App token the snapshot reads with
+        id: snapshot-token
+        if: steps.serving.outputs.sha != ''
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.AGENT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
+          owner: Thitic9203
+          repositories: pluton-timesheet
+          permission-contents: read
+          permission-issues: read
+          permission-pull-requests: read
+          permission-actions: read
+          permission-checks: read
       - name: Build the board snapshot from GitHub
         if: steps.serving.outputs.sha != ''
         timeout-minutes: 3
         working-directory: site
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ steps.snapshot-token.outputs.token }}
           AGENT_ENABLED: ${{ vars.AGENT_ENABLED }}
           AGENT_APP_LOGIN: ${{ vars.AGENT_APP_SLUG }}[bot]
           CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_TOKEN_PROD }}

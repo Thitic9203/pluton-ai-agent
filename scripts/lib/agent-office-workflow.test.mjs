@@ -84,15 +84,19 @@ test('R46: staging runs on a push of main only, and needs every test job', () =>
 });
 
 test('R65: each refresh runs only on an issue event, an agent workflow ending, or by hand with target refresh', () => {
+  // docs/sdd/repo-split/spec.md R15: pluton-timesheet's issue events and its Deploy production runs
+  // arrive relayed (ts-issues, ts-deploy-production); the agent workflows live here, so their
+  // workflow_run stays.
   const on = /^on:\s*\n((?:(?:[ \t].*)?\n)*)/m.exec(yaml)[1];
-  assert.match(on, /^  issues:\s*\n    types: \[opened, labeled, unlabeled, closed, reopened\]/m);
-  assert.match(on, /^  workflow_run:\s*\n    workflows: \[Agent, Agent release, Agent sweep, Deploy production\]\s*\n    types: \[completed\]/m);
+  assert.match(on, /^  repository_dispatch:\s*\n    types: \[ts-issues, ts-deploy-production\]/m);
+  assert.match(on, /^  workflow_run:\s*\n    workflows: \[Agent, Agent release, Agent sweep\]\s*\n    types: \[completed\]/m);
   assert.doesNotMatch(on, /^  schedule:/m, 'Q21: no schedule until the Pages deployment count is known');
   assert.doesNotMatch(on, /pull_request_target/);
   for (const id of ['refresh-staging', 'refresh-production']) {
     const c = ifOf(job(id));
     assert.doesNotMatch(c, /'push'/, `${id} never runs on a push`);
-    assert.match(c, /github\.event_name == 'issues'/);
+    assert.match(c, /github\.event_name == 'repository_dispatch' && github\.event\.action == 'ts-issues'/);
+    assert.match(c, /github\.event_name == 'repository_dispatch' && github\.event\.action == 'ts-deploy-production'/);
     assert.match(c, /github\.event_name == 'workflow_run'/);
     assert.match(c, /inputs\.target == 'refresh'/);
     assert.match(c, /github\.ref == 'refs\/heads\/main'/);
@@ -109,11 +113,12 @@ test('R46, R65: a refresh publishes the sha its environment already serves, read
 });
 
 test('R65, N2: an opened issue is in the trigger and each refresh job accepts it', () => {
+  // docs/sdd/repo-split/spec.md R15, R16: the relayed issue event carries its action as an identifier.
   const on = /^on:\s*\n((?:(?:[ \t].*)?\n)*)/m.exec(yaml)[1];
-  const types = /^  issues:\s*\n    types: \[([^\]]*)\]/m.exec(on)?.[1].split(',').map((s) => s.trim()) ?? [];
-  assert.ok(types.includes('opened'), `issues.types lists opened: [${types.join(', ')}]`);
+  const types = /^  repository_dispatch:\s*\n    types: \[([^\]]*)\]/m.exec(on)?.[1].split(',').map((s) => s.trim()) ?? [];
+  assert.ok(types.includes('ts-issues'), `repository_dispatch.types lists ts-issues: [${types.join(', ')}]`);
   for (const id of ['refresh-staging', 'refresh-production']) {
-    assert.match(ifOf(job(id)), /github\.event\.action == 'opened'/, `${id} accepts an opened issue`);
+    assert.match(ifOf(job(id)), /github\.event\.client_payload\.action == 'opened'/, `${id} accepts an opened issue`);
   }
 });
 
@@ -147,7 +152,14 @@ test('R65: every publish builds the snapshot first, with the job token and the A
     assert.notEqual(snap, -1, `${id} builds the snapshot`);
     assert.notEqual(pub, -1, `${id} publishes`);
     assert.ok(snap < pub, `${id}: snapshot before publish`);
-    assert.match(s[snap], /GITHUB_TOKEN: \$\{\{ github\.token \}\}/);
+    // docs/sdd/repo-split/spec.md R17: the board reads pluton-timesheet, which this repository's workflow
+    // token cannot, so a read-only App token is minted just before, with this job's read scopes.
+    assert.match(s[snap], /GITHUB_TOKEN: \$\{\{ steps\.snapshot-token\.outputs\.token \}\}/);
+    const mint = s[snap - 1] ?? '';
+    assert.match(mint, /^\s+id: snapshot-token$/m, `${id}: the snapshot token is minted right before`);
+    assert.match(mint, /^\s+owner: Thitic9203$/m);
+    assert.match(mint, /^\s+repositories: pluton-timesheet$/m);
+    assert.deepEqual([...mint.matchAll(/^\s+(permission-[a-z-]+): (\w+)$/gm)].map((m) => m[2]).filter((v) => v !== 'read'), [], `${id}: read scopes only`);
     assert.match(s[snap], /AGENT_ENABLED: \$\{\{ vars\.AGENT_ENABLED \}\}/);
     assert.match(s[snap], /AGENT_APP_LOGIN: \$\{\{ vars\.AGENT_APP_SLUG \}\}\[bot\]/, `${id}: the money block vouches markers by the agent App login (R59, T36)`);
     assert.doesNotMatch(s[snap], /CLOUDFLARE_API_TOKEN/, `${id}: the snapshot step holds no Cloudflare deploy token`);
@@ -178,8 +190,9 @@ test('R41, R48: each job reads only its own environment\'s Cloudflare token, and
   for (const [id, { env, project, other, secret }] of PUBLISHERS) {
     const body = job(id);
     assert.match(body, new RegExp(`^    environment: ${env}$`, 'm'), `${id} environment`);
-    // T37, R61: plus the environment's read-only analytics token for the internet line.
-    assert.deepEqual(secretsOf(body), [`CLOUDFLARE_ANALYTICS_TOKEN_${secret.endsWith('_PROD') ? 'PROD' : 'STAGING'}`, secret].sort(), `${id} secrets`);
+    // T37, R61: plus the environment's read-only analytics token for the internet line; and since
+    // docs/sdd/repo-split/spec.md R17 the App key that mints the snapshot's read-only token.
+    assert.deepEqual(secretsOf(body), ['AGENT_APP_PRIVATE_KEY', `CLOUDFLARE_ANALYTICS_TOKEN_${secret.endsWith('_PROD') ? 'PROD' : 'STAGING'}`, secret].sort(), `${id} secrets`);
     assert.match(body, new RegExp(`--project-name ${project}\\b`));
     assert.doesNotMatch(body, new RegExp(other), `${id} names the other project`);
   }
@@ -189,7 +202,9 @@ test('R41, R48: each job reads only its own environment\'s Cloudflare token, and
 
 test('R41: no secret is echoed, printed or put on a command line', () => {
   for (const line of code(yaml).split('\n')) {
-    if (/secrets\./.test(line)) assert.match(line, /^\s+[A-Z_]+: \$\{\{ secrets\.[A-Z0-9_]+ \}\}\s*$/, `a secret outside an env mapping: ${line.trim()}`);
+    // docs/sdd/repo-split/spec.md R17: the App key is the one secret passed as an action input, to the
+    // create-github-app-token step, never to a shell.
+    if (/secrets\./.test(line)) assert.match(line, /^\s+(?:[A-Z_]+: \$\{\{ secrets\.[A-Z0-9_]+ \}\}|private-key: \$\{\{ secrets\.AGENT_APP_PRIVATE_KEY \}\})\s*$/, `a secret outside an env mapping: ${line.trim()}`);
     if (/\b(echo|printf)\b/.test(line)) assert.doesNotMatch(line, /\$\{?(CLOUDFLARE_API_TOKEN|CLOUDFLARE_ANALYTICS_TOKEN|GITHUB_TOKEN|GH_TOKEN)\b/, `prints a credential: ${line.trim()}`);
     assert.doesNotMatch(line, /--token|--api-token/, `a credential on a command line: ${line.trim()}`);
   }

@@ -27,6 +27,12 @@ on:
 
 permissions: {}
 
+# Repo split (docs/sdd/repo-split/spec.md R17 to R19): the sweep reads and files on pluton-timesheet, so it
+# checks that repository out at the workspace root and files with an App token that asks for what the
+# workflow token had there; this repository's scripts run from a copy outside that tree.
+env:
+  PRODUCT_REPO: Thitic9203/pluton-timesheet
+
 # One sweep at a time, so two runs never count the caps against each other; none is cancelled.
 concurrency:
   group: agent-sweep
@@ -40,16 +46,37 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-      issues: write   # file the self-filed issue, its label and the duplicate comment
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
+      - name: Keep this repository's scripts outside the product tree
+        run: |
+          mkdir -p "$RUNNER_TEMP/pluton-ai-agent"
+          cp -R scripts "$RUNNER_TEMP/pluton-ai-agent/"
+      - name: Mint the App token that reads and files on pluton-timesheet
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.AGENT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_APP_PRIVATE_KEY }}
+          owner: Thitic9203
+          repositories: pluton-timesheet
+          permission-contents: read
+          permission-issues: write   # file the self-filed issue, its label and the duplicate comment
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: Thitic9203/pluton-timesheet
+          ref: main
+          token: ${{ steps.app-token.outputs.token }}
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with: { node-version: 22.23.2 }
       - name: Sweep and file
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          # docs/sdd/repo-split/spec.md R21: the App files now; evidence it posted counts as the sweep's own.
+          AGENT_APP_LOGIN: ${{ vars.AGENT_APP_SLUG }}[bot]
           AGENT_SWEEP_FILE: ${{ inputs.dry_run && '0' || '1' }}
           AGENT_AI_COST_UNPAID: ${{ vars.AGENT_AI_COST_UNPAID }}
-        run: node scripts/agent/cli.mjs sweep
+        run: node "$RUNNER_TEMP/pluton-ai-agent/scripts/agent/cli.mjs" sweep

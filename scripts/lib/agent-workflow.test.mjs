@@ -77,7 +77,10 @@ for (const file of FILES) {
 
   test(`${file}: no job asks for an OIDC token or a workflow, admin or secrets permission`, () => {
     assert.doesNotMatch(yaml, /^\s*id-token:/m);
-    assert.doesNotMatch(yaml, /permission-(workflows|administration|secrets|actions):/);
+    assert.doesNotMatch(yaml, /permission-(workflows|administration|secrets):/);
+    // docs/sdd/repo-split/spec.md R17: agent-release.yml's App tokens carry the actions scopes its jobs'
+    // workflow token had on pluton-timesheet (staged read, release write); asserted by job below.
+    if (file !== 'agent-release.yml') assert.doesNotMatch(yaml, /permission-actions:/);
   });
 }
 
@@ -96,10 +99,14 @@ test('agent-sweep.yml: its one job also waits for vars.AGENT_SWEEP_ENABLED, writ
   const job = jobs.get('sweep');
   assert.equal(ifOf(job), "vars.AGENT_ENABLED == 'true' && vars.AGENT_SWEEP_ENABLED == 'true'");
   const perms = job.match(/^ {4}permissions:\n((?: {6}.*\n)+)/m)?.[1] ?? '';
-  assert.deepEqual(perms.split('\n').filter(Boolean).map((l) => l.replace(/\s+#.*$/, '').trim()).sort(), ['contents: read', 'issues: write']);
+  // docs/sdd/repo-split/spec.md R17: the workflow token only checks out this repository; the issues
+  // write moved to the App token, which reaches pluton-timesheet.
+  assert.deepEqual(perms.split('\n').filter(Boolean).map((l) => l.replace(/\s+#.*$/, '').trim()).sort(), ['contents: read']);
+  const app = job.split(/\n {6}- /).find((s) => /create-github-app-token@/.test(s)) ?? '';
+  assert.deepEqual([...app.matchAll(/^\s+(permission-[a-z-]+: (?:read|write))/gm)].map((m) => m[1]).sort(), ['permission-contents: read', 'permission-issues: write']);
   const minutes = Number(job.match(/^ {4}timeout-minutes: (\d+)$/m)?.[1]);
   assert.ok(minutes > 0 && minutes <= 10, `timeout ${minutes}`);
-  assert.match(job, /^\s+run: node scripts\/agent\/cli\.mjs sweep$/m);
+  assert.match(job, /^\s+run: node "\$RUNNER_TEMP\/pluton-ai-agent\/scripts\/agent\/cli\.mjs" sweep$/m);
   assert.match(job, /^\s+persist-credentials: false$/m);
 });
 
@@ -119,10 +126,10 @@ test('agent-sweep.yml: a manual dispatch is a dry run by default (review of #499
 });
 
 test('agent.yml answers the events that drain the queue and refresh the merge check', () => {
+  // docs/sdd/repo-split/spec.md R15: pluton-timesheet's issues, comments, reviews, CI runs of agent
+  // branches and statuses arrive relayed, one repository_dispatch type each.
   const yaml = read('agent.yml');
-  assert.match(yaml, /^ {2}issues:\n {4}types: \[labeled, unlabeled, closed\]$/m);
-  assert.match(yaml, /^ {2}workflow_run:\n {4}workflows: \[CI\]\n {4}types: \[completed\]$/m);
-  assert.match(yaml, /^ {2}status:\s*$/m);
+  assert.match(yaml, /^ {2}repository_dispatch:\n {4}types: \[ts-issues, ts-issue-comment, ts-pr-review, ts-ci-completed, ts-status\]$/m);
 });
 
 test('agent.yml: dispatch runs one at a time for the whole repository', () => {
@@ -175,16 +182,17 @@ test('item 2: the agent cannot edit .github/, and no pull request opens without 
   assert.match(flag(agent, 'disallowedTools'), /Edit\(\.github\/\*\*\)/);
   assert.doesNotMatch(flag(agent, 'allowedTools'), /gh pr create/);
   // Since the fourth review the .github check runs in the open-pr job, after the agent job.
-  assert.match(jobsOf(yaml).get('open-pr') ?? '', /run: node scripts\/agent\/cli\.mjs pull-request/);
+  assert.match(jobsOf(yaml).get('open-pr') ?? '', /run: node "\$RUNNER_TEMP\/pluton-ai-agent\/scripts\/agent\/cli\.mjs" pull-request/);
   assert.match(yaml, /lacks the Workflows permission/);
   assert.match(yaml, /residual risk for the owner \(not accepted by AI\)/);
 });
 
 test('item 3: the agent runs named commands, not any npm script or any script file', () => {
   const allowed = flag(jobsOf(read('agent.yml')).get('agent'), 'allowedTools');
-  assert.doesNotMatch(allowed, /Bash\(npm run:\*\)|Bash\(npm run \*\)|Bash\(node scripts\/:\*\)/);
+  assert.doesNotMatch(allowed, /Bash\(npm run:\*\)|Bash\(npm run \*\)|Bash\(node scripts\/:\*\)|Bash\(node \$\{\{ runner\.temp \}\}\/:\*\)/);
+  // docs/sdd/repo-split/spec.md R19: plan-marker is this repository's script, run from its copy.
   for (const rule of ['Bash(npm run lint)', 'Bash(npm run typecheck)', 'Bash(npm run test:scripts)',
-    'Bash(node scripts/agent/cli.mjs plan-marker .agent/issue-${{ needs.dispatch.outputs.issue }}/plan.md)']) {
+    'Bash(node ${{ runner.temp }}/pluton-ai-agent/scripts/agent/cli.mjs plan-marker .agent/issue-${{ needs.dispatch.outputs.issue }}/plan.md)']) {
     assert.ok(allowed.split(',').includes(rule), rule);
   }
 });
@@ -214,10 +222,12 @@ test('fourth review: open-pr is its own gated job that checks the hand-off and t
   assert.match(ifOf(job), /^vars\.AGENT_ENABLED == 'true' && needs\.agent\.result == 'success'/);
   assert.match(job, /^ {6}group: agent-issue-\$\{\{ needs\.dispatch\.outputs\.issue \}\}$/m);
   const steps = job.split(/\n {6}- /);
-  const checkout = steps.findIndex((s) => /^uses: actions\/checkout@/m.test(s));
-  const run = steps.findIndex((s) => /^\s*run: node scripts\/agent\/cli\.mjs pull-request$/m.test(s));
+  // docs/sdd/repo-split/spec.md R19: the clean checkout is pluton-timesheet's main, the git store the
+  // pushed branch is fetched into; the script runs from this repository's copy outside it.
+  const checkout = steps.findIndex((s) => /^uses: actions\/checkout@/m.test(s) && /repository: Thitic9203\/pluton-timesheet/.test(s));
+  const run = steps.findIndex((s) => /^\s*run: node "\$RUNNER_TEMP\/pluton-ai-agent\/scripts\/agent\/cli\.mjs" pull-request$/m.test(s));
   assert.ok(checkout > 0 && run > checkout, 'clean checkout before the run');
-  assert.match(steps[checkout], /^\s+ref: \$\{\{ github\.event\.repository\.default_branch \}\}$/m);
+  assert.match(steps[checkout], /^\s+ref: main$/m);
   assert.match(steps[checkout], /^\s+persist-credentials: false$/m);
   assert.match(job, /uses: actions\/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3\.3\.0/);
   assert.match(steps[run], /^\s+AGENT_EXPECTED_SHA: \$\{\{ needs\.agent\.outputs\.head_sha \}\}$/m);
@@ -243,12 +253,13 @@ test('item 3 (third review): the header says Write path rules are not consulted,
 });
 
 test('item 5: dispatch is not even allocated a runner for an event it would ignore', () => {
+  // docs/sdd/repo-split/spec.md R4, R16: the comment author and text, the closed issue's labels, the
+  // run's branch and the review's head are not in the relay payload; the relay filters them at the
+  // source and cli.mjs judges them again from the API. Here only the relay's identifiers are tested.
   const cond = ifOf(jobsOf(read('agent.yml')).get('dispatch'));
-  assert.match(cond, /github\.event_name != 'issue_comment' \|\| \(github\.event\.comment\.user\.login == 'Thitic9203' && startsWith\(github\.event\.comment\.body, '\/'\)\)/);
-  assert.match(cond, /github\.event_name != 'issues' \|\| startsWith\(github\.event\.label\.name, 'agent:'\) \|\| \(github\.event\.action == 'closed' && contains\(join\(github\.event\.issue\.labels\.\*\.name, ','\), 'agent:'\)\)/);
-  assert.match(cond, /github\.event_name != 'status' \|\| github\.event\.context == 'agent\/review'/);
-  assert.match(cond, /github\.event_name != 'workflow_run' \|\| startsWith\(github\.event\.workflow_run\.head_branch, 'agent\/issue-'\)/);
-  assert.match(cond, /github\.event_name != 'pull_request_review' \|\| startsWith\(github\.event\.pull_request\.head\.ref, 'agent\/issue-'\)/);
+  assert.match(cond, /github\.event_name == 'repository_dispatch'/);
+  assert.match(cond, /github\.event\.action != 'ts-issues' \|\| startsWith\(github\.event\.client_payload\.label, 'agent:'\) \|\| github\.event\.client_payload\.action == 'closed'/);
+  assert.match(cond, /github\.event\.action != 'ts-status' \|\| github\.event\.client_payload\.context == 'agent\/review'/);
 });
 
 test('item 6: the posted review summary is capped, and the header names the unrestricted Read', () => {
@@ -261,17 +272,20 @@ test('item 6: the posted review summary is capped, and the header names the unre
 // Production stays a person's act: only the QA Lead's own dispatch on main reaches deploy-production.yml.
 test('agent-release.yml answers CI on main, a push to release/next and a dispatch, nothing else', () => {
   const yaml = read('agent-release.yml');
+  // docs/sdd/repo-split/spec.md R15: CI of pluton-timesheet main and its release/next arrive relayed.
   const on = yaml.slice(yaml.search(/^on:\s*$/m), yaml.search(/^permissions:/m));
-  assert.deepEqual([...on.matchAll(/^ {2}([a-z_]+):/gm)].map((m) => m[1]), ['workflow_run', 'push', 'workflow_dispatch']);
-  assert.match(on, /workflows: \[CI\]\n\s+types: \[completed\]\n\s+branches: \[main\]/);
-  assert.match(on, /push:\n\s+branches: \[release\/next\]/);
+  assert.deepEqual([...on.matchAll(/^ {2}([a-z_]+):/gm)].map((m) => m[1]), ['repository_dispatch', 'workflow_dispatch']);
+  assert.match(on, /^ {2}repository_dispatch:\n {4}types: \[ts-ci-main-completed, ts-release-next\]$/m);
 });
 
 test('agent-release.yml: each job answers its own event only', () => {
   const jobs = jobsOf(read('agent-release.yml'));
   assert.deepEqual([...jobs.keys()], ['staged', 'count', 'release']);
-  assert.match(ifOf(jobs.get('staged')), /&& github\.event_name == 'workflow_run'$/);
-  assert.match(ifOf(jobs.get('count')), /&& github\.event_name == 'push'$/);
+  assert.match(ifOf(jobs.get('staged')), /&& github\.event_name == 'repository_dispatch' && github\.event\.action == 'ts-ci-main-completed'$/);
+  assert.match(ifOf(jobs.get('count')), /&& github\.event_name == 'repository_dispatch' && github\.event\.action == 'ts-release-next'$/);
+  // repo-split R16: staged takes the run id and head sha from the run read back from the API.
+  assert.match(jobs.get('staged'), /RUN_ID: \$\{\{ steps\.event\.outputs\.run_id \}\}/);
+  assert.match(jobs.get('staged'), /if: steps\.event\.outputs\.action == 'completed' && steps\.event\.outputs\.branch == 'main'/);
   assert.equal(
     ifOf(jobs.get('release')),
     "vars.AGENT_ENABLED == 'true' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && vars.AGENT_QA_LEAD != '' && github.triggering_actor == vars.AGENT_QA_LEAD",
@@ -281,8 +295,12 @@ test('agent-release.yml: each job answers its own event only', () => {
 });
 
 test('agent-release.yml: count runs main\'s copy of the scripts, never the agent-written release/next', () => {
+  // docs/sdd/repo-split/spec.md R19: the scripts are this repository's; a dispatch runs on its default
+  // branch, and count checks out nothing of pluton-timesheet, so release/next is never on disk.
   const count = jobsOf(read('agent-release.yml')).get('count');
-  assert.match(count, /uses: actions\/checkout@[0-9a-f]{40} # v7\n\s+with:\n\s+ref: \$\{\{ github\.event\.repository\.default_branch \}\}\n/);
+  const checkouts = count.split(/\n {6}- /).filter((s) => /^uses: actions\/checkout@/m.test(s));
+  assert.equal(checkouts.length, 1);
+  assert.doesNotMatch(checkouts[0], /repository:|ref:/);
 });
 
 test('agent-release.yml: only the release job may dispatch production, and only it holds actions: write', () => {
@@ -290,7 +308,7 @@ test('agent-release.yml: only the release job may dispatch production, and only 
   const jobs = jobsOf(yaml);
   for (const [id, body] of jobs) {
     assert.equal(/actions: write/.test(body), id === 'release', id);
-    assert.equal(/release-cli\.mjs release/.test(body), id === 'release', id);
+    assert.equal(/release-cli\.mjs"? release/.test(body), id === 'release', id);
   }
   assert.doesNotMatch(yaml, /contents: write|pull-requests: write/);
   assert.match(jobs.get('staged'), /node scripts\/staging-smoke\.mjs/);
@@ -300,7 +318,8 @@ test('agent-release.yml: only the release job may dispatch production, and only 
 // Plan row 14 (agent-workflow-and-economy.md section 8): every moment posts in the issue's Slack
 // thread through scripts/agent/slack-notify.mjs, with SLACK_BOT_TOKEN from the environment staging,
 // the App token (so the thread marker is the App's), and the event passed through env, never ${{ in run.
-const SLACK_RUN = /node scripts\/agent\/cli\.mjs slack-notify --issue="\$(?:ISSUE|n)" --event="\$SLACK_EVENT"/;
+// repo-split R19: a job that checked pluton-timesheet out runs this repository's copy of the script.
+const SLACK_RUN = /node (?:scripts|"\$RUNNER_TEMP\/pluton-ai-agent\/scripts)\/agent\/cli\.mjs"? slack-notify --issue="\$(?:ISSUE|n)" --event="\$SLACK_EVENT"/;
 
 function slackStep(job, event) {
   const step = job.split(/\n {6}- /).find((s) => new RegExp(`^\\s+SLACK_EVENT: ${event}$`, 'm').test(s));
@@ -323,19 +342,22 @@ test('row 14: agent.yml posts started, the gates, mock, blocked and merged, each
   // itself, whatever job added the label, and only when the App added it, so a crashed agent job or
   // open-pr's agent:blocked is still announced and nobody else can make the bot post.
   assert.equal(jobs.get('slack-gate'), undefined, 'no second path that would post the same gate twice');
+  // docs/sdd/repo-split/spec.md R16: the relay carries the action and the label only; who added the
+  // label is read from the issue timeline by `cli.mjs event`, and only the App's label posts.
   const label = jobs.get('slack-label');
   assert.equal(
     ifOf(label),
-    "vars.AGENT_ENABLED == 'true' && github.event_name == 'issues' && github.event.action == 'labeled' "
-      + "&& (github.event.label.name == 'agent:planning' || github.event.label.name == 'agent:test-planning' || github.event.label.name == 'agent:blocked') "
-      + "&& github.event.sender.login == format('{0}[bot]', vars.AGENT_APP_SLUG)",
+    "vars.AGENT_ENABLED == 'true' && github.event_name == 'repository_dispatch' && github.event.action == 'ts-issues' "
+      + "&& github.event.client_payload.action == 'labeled' "
+      + "&& (github.event.client_payload.label == 'agent:planning' || github.event.client_payload.label == 'agent:test-planning' || github.event.client_payload.label == 'agent:blocked')",
   );
   assert.doesNotMatch(label, /^ {4}needs:/m);
   const step = slackStep(label, 'auto');
-  assert.match(step, /^\s+LABEL: \$\{\{ github\.event\.label\.name \}\}$/m);
-  assert.match(step, /^\s+ISSUE: \$\{\{ github\.event\.issue\.number \}\}$/m);
+  assert.match(step, /^\s+if: steps\.event\.outputs\.sender == format\('\{0\}\[bot\]', vars\.AGENT_APP_SLUG\) && steps\.event\.outputs\.action == 'labeled'$/m);
+  assert.match(step, /^\s+LABEL: \$\{\{ steps\.event\.outputs\.label \}\}$/m);
+  assert.match(step, /^\s+ISSUE: \$\{\{ steps\.event\.outputs\.number \}\}$/m);
   assert.match(step, /--label="\$LABEL"$/m);
-  assert.match(label, /^ {6}group: agent-slack-\$\{\{ github\.event\.issue\.number \}\}$/m);
+  assert.match(label, /^ {6}group: agent-slack-\$\{\{ github\.event\.client_payload\.number \}\}$/m);
   // The dispatcher ignores these labels (only agent:ready starts work), so this path never starts the agent.
   const merged = jobs.get('slack-merged');
   assert.equal(ifOf(merged), "vars.AGENT_ENABLED == 'true' && needs.merge-check.outputs.merged == 'success'");
@@ -388,7 +410,9 @@ test('follow-up 6: main-audit stops issues with an issues-write App token', () =
   assert.match(steps[mint], /^\s+permission-issues: write$/m);
   assert.doesNotMatch(steps[mint], /permission-(contents|pull-requests):/);
   assert.match(steps[run], /^\s+AGENT_STOP_TOKEN: \$\{\{ steps\.app-token\.outputs\.token \}\}$/m);
-  assert.match(steps[run], /^\s+GITHUB_TOKEN: \$\{\{ github\.token \}\}$/m);
+  // docs/sdd/repo-split/spec.md R17: the audit reads pluton-timesheet with an App token holding the
+  // workflow token's former permissions there, not with this repository's workflow token.
+  assert.match(steps[run], /^\s+GITHUB_TOKEN: \$\{\{ steps\.read-token\.outputs\.token \}\}$/m);
 });
 
 test('follow-up 7: agent-crashed comments, then labels agent:blocked, when the agent job failed', () => {
@@ -400,7 +424,7 @@ test('follow-up 7: agent-crashed comments, then labels agent:blocked, when the a
   assert.match(job, /^\s+permission-issues: write$/m);
   assert.match(job, /^\s+GH_TOKEN: \$\{\{ steps\.app-token\.outputs\.token \}\}$/m);
   const comment = job.indexOf('gh issue comment "$ISSUE"');
-  const label = job.indexOf('gh issue edit "$ISSUE" --repo "$GITHUB_REPOSITORY" --add-label agent:blocked');
+  const label = job.indexOf('gh issue edit "$ISSUE" --repo "$PRODUCT_REPO" --add-label agent:blocked');
   assert.ok(comment > 0 && label > comment, 'comment first, then label');
   assert.match(job, /Agent stopped: the agent job failed, run \$\{RUN_URL\}/);
 });
@@ -413,16 +437,25 @@ const permsOf = (job) => (job.match(/^ {4}permissions:\n((?: {6}.*\n)+)/m)?.[1] 
 test('agent-triage.yml answers a schedule, a new issue and a dispatch, nothing else', () => {
   const yaml = read('agent-triage.yml');
   const on = yaml.slice(yaml.search(/^on:\s*$/m), yaml.search(/^permissions:/m));
-  assert.deepEqual([...on.matchAll(/^ {2}([a-z_]+):/gm)].map((m) => m[1]), ['schedule', 'issues', 'workflow_dispatch']);
-  assert.match(on, /^ {4}types: \[opened\]$/m);
+  // docs/sdd/repo-split/spec.md R15: a new pluton-timesheet issue arrives relayed as ts-issues, and
+  // judge answers only its opened action.
+  assert.deepEqual([...on.matchAll(/^ {2}([a-z_]+):/gm)].map((m) => m[1]), ['schedule', 'repository_dispatch', 'workflow_dispatch']);
+  assert.match(on, /^ {4}types: \[ts-issues\]$/m);
+  assert.match(ifOf(jobsOf(yaml).get('judge')), /&& \(github\.event_name != 'repository_dispatch' \|\| github\.event\.client_payload\.action == 'opened'\)$/);
 });
 
 test('agent-triage.yml: judge reads only, holds no App token and no write tool', () => {
   const jobs = jobsOf(read('agent-triage.yml'));
   assert.deepEqual([...jobs.keys()], ['judge', 'apply']);
   const judge = jobs.get('judge');
-  assert.deepEqual(permsOf(judge), ['contents: read', 'issues: read']);
-  assert.doesNotMatch(judge, /create-github-app-token|AGENT_APP_PRIVATE_KEY|SLACK_BOT_TOKEN/);
+  // docs/sdd/repo-split/spec.md R17: this repository's workflow token cannot read pluton-timesheet, and
+  // a token cannot pass between jobs as an output, so judge mints one App token, read only: the
+  // workflow token's former permissions. The model still holds no write token and no Slack token.
+  assert.deepEqual(permsOf(judge), ['contents: read']);
+  const mints = judge.split(/\n {6}- /).filter((s) => /create-github-app-token@/.test(s));
+  assert.equal(mints.length, 1);
+  assert.deepEqual([...mints[0].matchAll(/^\s+(permission-[a-z-]+: (?:read|write))/gm)].map((m) => m[1]).sort(), ['permission-contents: read', 'permission-issues: read']);
+  assert.doesNotMatch(judge, /: write\b|SLACK_BOT_TOKEN/);
   assert.match(judge, /--allowedTools "Read,Glob,Grep"/);
   assert.match(judge, /--disallowedTools "Edit,Write,MultiEdit,NotebookEdit,Bash,WebFetch,WebSearch"/);
   assert.match(judge, /--json-schema /);
