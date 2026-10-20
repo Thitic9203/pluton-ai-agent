@@ -1,7 +1,7 @@
 // T5. Spec: docs/sdd/ols-real/spec.md R6, E2, E3.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CAP, reconcile, pick, afterRun, afterVerdict, afterApply } from './dispatch.mjs';
+import { CAP, reconcile, pick, afterRun, afterVerdict, afterApply, contextCandidates, applyActions } from './dispatch.mjs';
 
 const NOW = '2026-10-17T03:00:00.000Z';
 const t = (n, duty, created = `2026-10-0${n % 9 + 1}T00:00:00.000Z`) => ({ key: `OLS-${n}`, n, summary: `s${n}`, duty, created });
@@ -66,8 +66,34 @@ test('afterVerdict: passed approves; feedback reworks with the text; a failed jo
   assert.equal(afterVerdict({ phase: 'draft-sent' }, { kind: 'none' }, NOW).phase, 'draft-sent');
 });
 
+test('ols-retest-procedure R7, R8: an approval with instructions keeps them, and the apply carries each one', () => {
+  const j = afterVerdict({ phase: 'draft-sent' }, { kind: 'passed', ts: '4', instructions: ['อัปเดตผลในชีท qa', 'สถานะไป blocked'] }, NOW);
+  assert.deepEqual([j.phase, j.instructions], ['approved', ['อัปเดตผลในชีท qa', 'สถานะไป blocked']]);
+  const actions = [{ type: 'jira.comment', body: 'ผลรีเทส' }];
+  assert.deepEqual(applyActions(j, actions), [
+    { type: 'jira.comment', body: 'ผลรีเทส' },
+    { type: 'owner.instruction', text: 'อัปเดตผลในชีท qa' },
+    { type: 'owner.instruction', text: 'สถานะไป blocked' },
+  ]);
+  assert.deepEqual(actions, [{ type: 'jira.comment', body: 'ผลรีเทส' }], 'the worker actions are not changed in place');
+  // a bare passed carries no instruction; a later rework forgets the old ones
+  assert.deepEqual(applyActions(afterVerdict({ phase: 'draft-sent' }, { kind: 'passed', ts: '5', instructions: [] }, NOW), actions), actions);
+  assert.deepEqual(afterVerdict({ ...j, phase: 'draft-sent' }, { kind: 'feedback', text: 'แก้ข้อ 1', ts: '6' }, NOW).instructions, []);
+});
+
 test('afterApply: done is applied; an e2e rerun that fails goes back to triage', () => {
   assert.equal(afterApply({ phase: 'approved', kind: 'ticket' }, { ok: true }, NOW).phase, 'applied');
   const e = afterApply({ phase: 'approved', kind: 'e2e' }, { ok: false, error: 'rerun failed' }, NOW);
   assert.deepEqual([e.phase, e.feedback], ['rework', 'rerun failed']);
+});
+
+test('R17, E1: contextCandidates names every ticket job that could be ordered this tick, before any reply is read', () => {
+  const phases = ['queued', 'rework', 'draft-sent', 'failed', 'running', 'review', 'ready', 'approved', 'applied'];
+  const jobs = phases.map((phase) => ({ id: `OLS-1:${phase}`, kind: 'ticket', key: 'OLS-1', phase }));
+  jobs[jobs.length] = { id: 'e2e:X', kind: 'e2e', key: 'X', phase: 'queued' };
+  assert.deepEqual(contextCandidates(jobs).map((j) => j.phase), ['queued', 'rework', 'draft-sent', 'failed']);
+  // every job pick() can return after afterVerdict turns a sent draft or a failure into rework is covered
+  const after = jobs.map((j) => (j.phase === 'draft-sent' || j.phase === 'failed' ? { ...j, phase: 'rework' } : j));
+  const ids = new Set(contextCandidates(jobs).map((j) => j.id));
+  for (const j of pick(after, 99).filter((x) => x.kind !== 'e2e')) assert.ok(ids.has(j.id), j.id);
 });

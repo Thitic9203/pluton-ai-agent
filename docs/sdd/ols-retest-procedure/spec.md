@@ -86,3 +86,8 @@ Out of scope: Taskfolio work.
 
 - Q1. The OLS QA skills live in the private repo `ols-qa`; whether to mirror the clause into its
   retest skill too (another repository) is the owner's call.
+- Q2. (20 Oct 2026, lane E, implementing layer 9.) An instruction after `passed` is free text. The
+  apply carries it as an `owner.instruction` action, records it and says it back in the thread as
+  "still to do", but runs nothing for it: only the R8 steps the worker proposed as actions run. Whether
+  free text should go to a worker stage that turns it into actions (with or without a second
+  `passed`) is the owner's call.

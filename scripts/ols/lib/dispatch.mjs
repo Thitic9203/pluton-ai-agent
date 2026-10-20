@@ -54,9 +54,29 @@ export function afterRun(j, result, stage, now) {
 
 /** After reading the draft thread (R8). A reply on a failed job's thread also reworks it. */
 export function afterVerdict(j, v, now) {
-  if (v.kind === 'passed' && j.phase === 'draft-sent') return Object.assign(j, { phase: 'approved', updatedAt: now });
-  if (v.kind === 'feedback' && (j.phase === 'draft-sent' || j.phase === 'failed')) return Object.assign(j, { phase: 'rework', feedback: v.text, error: null, updatedAt: now });
+  // ols-retest-procedure R7: the lines after `passed` travel with the approval into the apply
+  if (v.kind === 'passed' && j.phase === 'draft-sent') return Object.assign(j, { phase: 'approved', instructions: [...(v.instructions ?? [])], updatedAt: now });
+  if (v.kind === 'feedback' && (j.phase === 'draft-sent' || j.phase === 'failed')) return Object.assign(j, { phase: 'rework', feedback: v.text, instructions: [], error: null, updatedAt: now });
   return j;
+}
+
+/**
+ * ols-retest-procedure R7, R8: what an approved job applies: the worker's actions, then one
+ * `owner.instruction` per line the owner wrote after `passed`. A new array; `actions` is not changed.
+ */
+export function applyActions(j, actions) {
+  return [...(actions ?? []), ...(j?.instructions ?? []).map((text) => ({ type: 'owner.instruction', text }))];
+}
+
+const MAY_ORDER = new Set(['queued', 'rework', 'draft-sent', 'failed']);
+
+/**
+ * R17, E1: the ticket jobs whose context is read right after the intake search, before any reply is
+ * read, any write applied or any message posted: every job pick() can return this tick, including a
+ * sent draft or a failure that a reply turns into rework.
+ */
+export function contextCandidates(jobs) {
+  return (jobs ?? []).filter((j) => j.kind !== 'e2e' && MAY_ORDER.has(j.phase));
 }
 
 /** After applying approved writes (R9, R12): a failed e2e rerun goes back to triage with the reason. */

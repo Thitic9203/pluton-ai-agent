@@ -111,8 +111,11 @@ line numbers of that saved HTML).
   Agent Bot (channel `D0ASX9ML4G6`), and must be applied only after the owner (`U06QB9UVAG4`) replies
   `passed` in that draft's thread. Source: MAP Notes (owner, 14 Oct 2026: "ส่งมาใน DM Slack เรา",
   "ถ้าเรา reply ว่า passed ก็ค่อยไปจัดการต่อได้"), P4 (bot, channel, scopes).
-- **R8.** `passed` counts only when it is the whole reply after trimming and lower-casing (a trailing
-  `.` or `!` allowed), it is written by the owner, and it is later than the draft. Any other owner
+- **R8.** `passed` counts only when it is the first line of the reply after trimming and lower-casing
+  (a trailing `.` or `!` allowed), it is written by the owner, and it is later than the draft; every
+  non-empty line after it is an instruction carried out in the same apply (amended 20 Oct 2026 by
+  [ols-retest-procedure](../ols-retest-procedure/spec.md) R7, which supersedes the earlier "whole
+  reply" rule; owner: "passed … ตรวจสอบว่าทิคเกตอยู่สถานะไรในตอนนี้ แล้วอัปเดตผลการทดสอบในชีท qa"). Any other owner
   reply in the thread returns the job to rework: the next run carries that reply as feedback, and the
   new draft goes to the same thread. Source: P4 ("เราจะตอบอะไรที่ไม่ใช่คำที่กำหนด คุณต้องโต้ตอบให้
   ถูกต้องด้วย"); the agent-dm-worker keeps answering the conversation within 30 seconds (unchanged).
@@ -161,6 +164,33 @@ line numbers of that saved HTML).
   "รอบหน้าตรวจและทำแบบนี้เช่นกัน", "เสมอ". Done when: the worker prompt and the scheduled task prompt
   carry the clause and `docs-check` asserts it.
 
+### Unattended running (review of `8ee83c0b3`, 20 Oct 2026)
+
+- **R21.** When the tick posts a failure notice (E2) or an apply result (R9) whose free text comes
+  from a worker, Jira, the sheet script or `actions.json` (a done file's `error`, an apply `error`,
+  an apply line, an action `type`), it must first neutralise any Jira wiki markup in that free text
+  (`||`, `\\`, `!x!`), so the Slack guard of ols-retest-procedure R5 never refuses the notice; the
+  guard itself is unchanged and still refuses a draft carrying markup. Limits: only the free text is
+  changed (a space is put inside each markup token), the tick's own wording is not. Source: E2 (the
+  owner can reply in the thread, which needs the notice posted), R9 (the result goes to the thread);
+  review of `8ee83c0b3` H1 (20 Oct 2026: a done file error with `||` made `slack.post` throw, so every
+  later tick exited 1 before any new order).
+- **R22.** When a Slack post succeeds, the tick must record that it was sent (the draft's `draftTs`
+  and `draft-sent`, a notice's `noticed`) before it reads the message back; a read-back that fails
+  or throws is recorded on the job as a failed read-back, never thrown, so the next tick never posts
+  the same message again. Source: ols-retest-procedure R6 (every message after the first is one reply
+  in the thread) and R9 (each write is read back and recorded); review of `8ee83c0b3` M1.
+- **R23.** When the tick collects a finished order and writes the next order (the review of R5), the
+  job must be saved right after that order is written, before any other job is handled, so a crash
+  between them can never leave the saved job on the stage whose files were just moved. Source: E1
+  (a failure changes no job beyond what was saved), R5 (`work-*` files); review of `8ee83c0b3` M2.
+- **R24.** The approval draft (R7) must show the exact text of every `jira.comment` body and every
+  `jira.mentionPo` body, and the PO account it mentions, as they will be posted; and when the whole
+  draft text the owner would read (the draft and every proposed write) carries Jira wiki markup, the
+  job must fail at collect with that reason (E2) instead of reaching Slack. Source: R7 (the owner
+  approves what is written), ols-retest-procedure R5; review of `8ee83c0b3` M3 (the draft said
+  "ข้อความตามร่างด้านบน" while the apply posts `a.body` from `actions.json`).
+
 ## Edge cases
 
 - **E1.** When Jira or Slack fails, the tick must change no job and send nothing, log the failure
@@ -196,6 +226,10 @@ line numbers of that saved HTML).
 - [ ] R13: `publish.test.mjs` sets the variable and starts the refresh only when the board changed.
 - [ ] R14, E4: `agent-office-snapshot.test.mjs` places valid OLS cards in `test-planning` and drops an invalid `OLS_BOARD`.
 - [ ] E1, E2, E3, E5: covered in `dispatch.test.mjs` and `apply.test.mjs`.
+- [ ] R21: `tick-steps.test.mjs` posts a failure notice and an apply result through the real `createSlack` guard when the error and lines carry `||`, `\\` and `!x!`, and the step after it still runs.
+- [ ] R22: `tick-steps.test.mjs`: a read-back that throws once leaves the draft recorded as sent, and a second pass posts nothing.
+- [ ] R23: `tick-steps.test.mjs`: a crash on the next job after the review order is written leaves the saved job on `review`, and the next collect does not fail it.
+- [ ] R24: `gate.test.mjs` finds every comment and mention body, and the PO account, verbatim in the draft; `tick-steps.test.mjs` fails at collect a job whose comment body carries `||`.
 
 ## Open questions (for the owner; not guessed)
 
@@ -226,8 +260,11 @@ line numbers of that saved HTML).
    header is read in full and `text.length` counts UTF-16 units, not bytes
    (`scripts/ols/lib/jira.mjs:42-43`). A streamed byte counter would make it a true read cap.
 10. (Same review.) The E1 prefetch uses `Promise.all`, so one ticket whose GET keeps failing stops
-   every tick before any owner approval is applied (`scripts/ols/tick.mjs:126`). E1 as written asks
+   every tick before any owner approval is applied (`scripts/ols/tick.mjs:135`). E1 as written asks
    for this; whether one bad ticket should hold the others is the owner's call.
 11. (Same review, pre-existing.) A ticket job that goes to rework keeps its `applied` ids, so a
-   revised action at the same index is skipped on the next `passed` (`scripts/ols/lib/dispatch.mjs:58`,
-   `:77`); e2e jobs already reset it at `:76`.
+   revised action at the same index is skipped on the next `passed` (`scripts/ols/lib/dispatch.mjs:59`,
+   `:86`); e2e jobs already reset it at `:85`.
+12. (Review of `8ee83c0b3`, 20 Oct 2026.) R24 prints each comment body in full, so a very long body
+   can push the draft past Slack's message limit (about 40,000 characters); whether to split the
+   draft or fail the job at collect is open.

@@ -11,6 +11,7 @@ Spec: `spec.md` in this folder
 | `scripts/ols/lib/e2e.mjs` (+test) | new, pure: newest run folder, unexpected cases | R10 |
 | `scripts/ols/lib/runner.mjs` (+test) | new: prompt per duty; since 19 Oct 2026 `buildOrder` (a work order for the `ols-qa-worker` agent) replaces the `claude -p` call, plus `readDone`/`collect` for the done file | R4, R5, R11, R18, E2 |
 | `.claude/agents/ols-qa-worker.md` (+`scripts/ols/lib/worker-agent.test.mjs`) | new 19 Oct 2026: the worker agent type, a tool list with no MCP tool and no WebFetch | R4 |
+| `.gitignore` | 19 Oct 2026: `.claude/*` is ignored; un-ignore `.claude/agents/ols-qa-worker.md` only | R4 |
 | `scripts/ols/lib/dispatch.mjs` (+test) | new, pure: job state machine, cap 3 | R6, E1 to E3 |
 | `scripts/ols/lib/apply.mjs` (+test) | new: allow-list, once-only writes, dry run first, e2e merge and rerun; 19 Oct 2026: the rerun may answer `pending` (R19) | R9, R12, R19, E5 |
 | `scripts/ols/lib/jira.mjs`, `slack.mjs` (+tests) | new: clients with injected `fetch`; credential loaders; 19 Oct 2026 `issue(key)` GET with `expand=names` | R1, R7, R17 |
@@ -103,3 +104,41 @@ e2e PRs are the loop's output in ols-qa-e2e, per P8).
 - A scheduled run that dies between a tick and its done files leaves orders out; the next tick fails
   them after 2 hours (E2) and the owner can reply in the thread to rework.
 - Risk: two ticks at once. Mitigation: a lock file; a second tick exits.
+
+## Review of `8ee83c0b3` (20 Oct 2026: R21 to R24)
+
+Files:
+
+| File | Change | Rules |
+|---|---|---|
+| `scripts/ols/lib/slack.mjs` | new export `plain(text)`: puts a space inside each Jira markup token (double pipe, double backslash, `!x!`) until `markupProblem` is null; `guard()` unchanged | R21 |
+| `scripts/ols/lib/tick-steps.mjs` (+`tick-steps.test.mjs`) | new: the live tick's Slack and collect steps moved out of `tick.mjs` so they can be tested with a fake `fetch` and a fake fs: `failureNotice`, `applyNotice`, `makeSay`, `collectStep` | R21 to R24 |
+| `scripts/ols/tick.mjs` | calls `tick-steps.mjs` instead of its own `say`, collect loop and notice text; no other change | R21 to R23 |
+| `scripts/ols/lib/gate.mjs` (+test) | `describe` prints the comment and mention body verbatim in a code fence, and the mention's account | R24 |
+
+Data shapes: `j.readBacks` entries keep `{ step: 'slack.post', ts, ok, error? }`; a read-back that throws
+becomes `{ ok: false, error: <message> }`. `makeSay` takes `mark(ts)`, called after the post and
+before the read-back, followed by `record()`.
+
+Alternatives weighed:
+
+- R21: strip the markup in `guard()` for every post. Rejected: a draft with markup must still be
+  refused (ols-retest-procedure R5), and the review asked to keep the guard as it is. Chosen:
+  neutralise only the free text of notices and apply results.
+- R24: refuse a job whose `a.body` is not inside `draft.md`. Rejected: a worker would have to copy
+  every body into the draft, and a loose containment check passes a body that differs slightly.
+  Chosen: print the body itself, so what the owner reads is what is posted; the markup check at
+  collect runs on the whole draft text, so a body with markup fails the job at collect (with a
+  reason that names the markup in words) rather than throwing at post time.
+- R22, R23: keep the logic in `tick.mjs` and test by running the script. Rejected: it needs the real
+  HOME, Jira and Slack. Chosen: inject the clients and fs into small step functions.
+
+Libraries: none new (Node built-ins only), free.
+
+What could break (hard constraint 5):
+
+- `draftText` output changes for `jira.comment` and `jira.mentionPo`; the existing `gate.test.mjs`
+  assertions (`คอมเมนต์ใน Jira`, `เมนชั่น PO ในเคสที่รอ PO CF: AC2, AC4`) still match.
+- A comment body longer than Slack's message limit (about 40,000 characters) now makes the draft
+  longer; not handled here (spec open question 12).
+- `tick.mjs` behaviour is otherwise the same; `node --check` shows it still loads.

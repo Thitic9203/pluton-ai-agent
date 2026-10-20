@@ -4,6 +4,8 @@
 import { join } from 'node:path';
 
 export const JIRA_BASE = 'https://skilllane.atlassian.net';
+/** R17: the largest Jira response read (5 MB). */
+const MAX_BODY = 5 * 1024 * 1024;
 
 export function loadJiraCreds({ env = process.env, home = process.env.HOME ?? '', readFile }) {
   const fromEnv = String(env.OLS_JIRA_CREDS ?? '').trim();
@@ -31,8 +33,15 @@ export function createJira({ creds, fetch, base = JIRA_BASE }) {
       headers: { Authorization: auth, Accept: 'application/json', ...(body ? { 'Content-Type': 'application/json' } : {}) },
       body: body ? JSON.stringify(body) : undefined,
     });
-    if (!res.ok) throw new Error(`Jira ${res.status} on ${path.split('?')[0]}`);
-    return res.status === 204 ? {} : res.json();
+    const where = path.split('?')[0];
+    if (!res.ok) throw Object.assign(new Error(`Jira ${res.status} on ${where}`), { status: res.status });
+    if (res.status === 204) return {};
+    // R17: no response over 5 MB is read, by its declared length or by what arrived
+    const declared = Number(res.headers?.get?.('content-length') ?? 0);
+    if (declared > MAX_BODY) throw new Error(`Jira response over 5 MB on ${where}`);
+    const text = await res.text();
+    if (text.length > MAX_BODY) throw new Error(`Jira response over 5 MB on ${where}`);
+    return text ? JSON.parse(text) : {};
   }
   return {
     /** R1: every page of a JQL search, GET only. */
@@ -49,7 +58,43 @@ export function createJira({ creds, fetch, base = JIRA_BASE }) {
       }
       return out;
     },
+    /**
+     * R17: one issue with every field but comments, and their names (to find the criteria fields), GET
+     * only. ols-retest-procedure R1: with its changelog, so the description's history is read too.
+     */
+    issue: (key) => call(`/rest/api/3/issue/${encodeURIComponent(key)}?${new URLSearchParams({ fields: '*all,-comment', expand: 'names,changelog' })}`),
+    /** R17: the newest 50 comments, newest first, with the total, GET only. */
+    async comments(key) {
+      const d = await call(`/rest/api/3/issue/${encodeURIComponent(key)}/comment?${new URLSearchParams({ orderBy: '-created', maxResults: '50' })}`);
+      return { comments: d.comments ?? [], total: d.total ?? (d.comments ?? []).length };
+    },
     comment: (key, text) => call(`/rest/api/3/issue/${encodeURIComponent(key)}/comment`, 'POST', { body: adf(text) }),
+    /** ols-retest-procedure R8: a comment that opens with an @mention of the PO. */
+    mention(key, accountId, text) {
+      const doc = adf(text);
+      doc.content[0].content = [{ type: 'mention', attrs: { id: accountId } }, { type: 'text', text: ` ${doc.content[0].content[0]?.text ?? ''}` }];
+      return call(`/rest/api/3/issue/${encodeURIComponent(key)}/comment`, 'POST', { body: doc });
+    },
+    /** ols-retest-procedure R8, R9: the ticket as it is now: status, QA Owner, TC Status and assignee, GET only. */
+    async state(key) {
+      const d = await call(`/rest/api/3/issue/${encodeURIComponent(key)}?${new URLSearchParams({ fields: 'status,assignee,customfield_12120,customfield_12128' })}`);
+      const f = d.fields ?? {};
+      return {
+        status: String(f.status?.name ?? ''),
+        qaOwner: String(f.customfield_12120?.displayName ?? ''),
+        tcStatus: String(f.customfield_12128?.value ?? ''),
+        assignee: String(f.assignee?.accountId ?? ''),
+      };
+    },
+    /** ols-retest-procedure R9: one comment read back by id; null when Jira has no such comment. */
+    async readComment(key, id) {
+      try {
+        return await call(`/rest/api/3/issue/${encodeURIComponent(key)}/comment/${encodeURIComponent(id)}`);
+      } catch (e) {
+        if (e?.status === 404) return null;
+        throw e;
+      }
+    },
     async transition(key, to) {
       const d = await call(`/rest/api/3/issue/${encodeURIComponent(key)}/transitions`);
       const want = String(to).trim().toLowerCase();
