@@ -73,7 +73,10 @@ workflow must stay in pluton-timesheet: the relay of R4.
   fences) that resolves to a missing file. Source: R2.
 - **R15.** Each pluton-timesheet event the agent acts on must reach pluton-ai-agent as `repository_dispatch` of one
   type: `ts-issues` (was `issues`), `ts-issue-comment` (`issue_comment`), `ts-pr-review` (`pull_request_review`),
-  `ts-ci-completed` (`workflow_run` of `CI`), `ts-status` (`status`), `ts-release-next` (`push` of `release/next`),
+  `ts-ci-completed` (`workflow_run` of `CI` on an `agent/issue-` branch, for `agent.yml`), `ts-ci-main-completed`
+  (`workflow_run` of `CI` of a push to `main`, for `agent-release.yml`; two types because a dispatch type cannot be
+  filtered in `on:` and each old trigger had its own branch filter), `ts-status` (`status`), `ts-release-next`
+  (`push` of `release/next`),
   `ts-main-push` (`push` of `main`, for `agent-main-audit.yml`), `ts-deploy-production` (`workflow_run` of `Deploy
   production`, for `deploy-agent-office.yml`). `client_payload` carries only these identifiers: `action` (the
   original event action), `number`, `label`, `comment_id`, `review_id`, `run_id`, `sha`, `context`, `before`,
@@ -85,7 +88,9 @@ workflow must stay in pluton-timesheet: the relay of R4.
   pull request, CI run, commit statuses and branches are read by number; the actor of a label change is read from
   the issue timeline, never the payload; a payload whose claim the API does not confirm (a label the issue does not
   carry, an issue that is not closed, a comment of another issue, a run that is not `CI` or not completed, a status
-  context that is not on that sha, a main range not on main) becomes an event the dispatcher ignores. The job
+  context that is not on that sha, a main range not on main, a `ts-ci-main-completed` run not of a push to `main`)
+  becomes an event the dispatcher ignores. A job that used a field of the event body (a sha, a branch, a run id,
+  a label, a sender) takes it from the outputs of `cli.mjs event`, which prints the rebuilt event's fields. The job
   `if:` filters keep their logic on identifiers (`github.event.action`, `client_payload.action`,
   `client_payload.label`) only; every decision that read the body (comment text, sender, review state, labels
   of the issue) is re-judged by the scripts from the API. Source: R5, Decision Q2.

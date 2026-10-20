@@ -46,7 +46,11 @@ scripts work in the workspace root, so the product stays there.
 
 What could break: the App installation must include pluton-timesheet (it does today) for every token; a product
 `npm run test:scripts` glob reaching `.pluton-ai-agent/` (it is a dot folder; checked when T7 runs); the relay of
-T8 must send exactly the keys above.
+T8 must send exactly the keys above. A label the dispatcher sets is now set with the App token (the
+workflow token of pluton-ai-agent cannot write pluton-timesheet), and an App label starts workflows where a
+workflow-token label did not: `agent:building` and `agent:queued` now reach the relay, wake `dispatch` (which
+ignores them, as `dispatchDecision` ignores every label but `agent:ready`) and refresh the Agent Office board. The
+relay of T8 may drop those two labels to save the minute; the behaviour is the same either way.
 
 ## Phase B, one pluton-timesheet round (R4, R7, R8, R10)
 
