@@ -110,6 +110,13 @@ workflow must stay in pluton-timesheet: the relay of R4.
   run (a `path:` checkout inside the workspace would sit inside the product tree, and the reviewer's checkout is the
   agent's branch). A job that needs only this repository's scripts checks out this repository as before, without a
   `ref:` (a dispatch or a schedule runs on the default branch). Source: R6.
+- **R21.** When a call that the workflow token made is made with the App token after the split (R17), every check
+  that recognised the workflow token's login (`github-actions[bot]`) must recognise the App's login
+  (`AGENT_APP_LOGIN`) for actions taken from now on: `findDispatchedRun` of `scripts/agent/release.mjs` (the
+  production run the release step dispatched) takes the dispatcher's login, and the sweep's `postedBy` evidence
+  check takes both logins, so evidence filed before the split by `github-actions[bot]` still counts and is not filed
+  twice. Source: R17, R10 (no gap at the cutover). The Agent Office board's `releaseProdRun`
+  (`scripts/lib/agent-office-snapshot.mjs`) has the same check; it only draws a card, so it is open question 4.
 - **R20.** pluton-ai-agent's `.github/workflows/ci.yml` must run on every `push` and `pull_request`, on
   `ubuntu-latest`, `actions/checkout` and `actions/setup-node` (node 22) at the exact pins the moved workflows
   use, then `npm test`, with `permissions: contents: read`. Source: R9.
@@ -124,6 +131,11 @@ workflow must stay in pluton-timesheet: the relay of R4.
 2. pluton-timesheet main is red (CI run 39371091028, E2E, management role) and constraint 12 holds the cutover round
    until it is root caused. Owner of that investigation: not assigned.
 3. R24 of ols-real refuses Jira comment bodies containing `||`; is there a confirmed rule that wants Jira tables?
+4. The Agent Office snapshot reads pluton-timesheet with the App token (R17), but two of its checks still describe
+   the old single repository: `releaseProdRun` matches `github-actions[bot]` (R21), and `runsInProgress(repo,
+   SWEEP_WORKFLOW)` looks for the sweep run in the product, where it no longer runs. Its App token names
+   `repositories: pluton-timesheet` only. Which repository the board reads each run from is the owner's call
+   with open question 1.
 
 ## Done when
 
@@ -145,4 +157,6 @@ workflow must stay in pluton-timesheet: the relay of R4.
   product `gh` call on `GITHUB_REPOSITORY`.
 - R16: `scripts/lib/agent-relay-event.test.mjs` asserts each type rebuilds the old event from a fake API and
   each unconfirmed claim becomes ignored.
+- R21: `agent-release.test.mjs` finds a run dispatched by the App login and `agent-sweep.test.mjs` counts evidence
+  posted by either login.
 - R20: `ci.yml` exists with those pins; its first run is green on main (after Actions are enabled, R10).

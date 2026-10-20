@@ -6,6 +6,7 @@
 | T2 | Rewrite back-links in moved docs to absolute URLs | R2, R14 | `scripts/lib/doc-links.test.mjs` fails on a relative link to a missing file | no relative link points outside the new repo; test green |
 | T3a | `relay-event.mjs` and its use in `cli.mjs`; `PRODUCT_REPO` in the scripts | R16, R18 | `scripts/lib/agent-relay-event.test.mjs` fails before the module exists | every type rebuilt, every unconfirmed claim ignored |
 | T3b | Workflows read and write pluton-timesheet with an App token and `repository_dispatch` triggers | R5, R6, R15, R17 to R19 | `scripts/lib/repo-split-workflows.test.mjs` fails on the copied workflows | test passes; existing workflow tests changed only where these rules change them |
+| T3c | Workflow-token login checks accept the App login | R21 | `agent-release.test.mjs` and `agent-sweep.test.mjs` fail on an App-dispatched run and App-posted evidence | both pass |
 | T4 | New repo CI | R9, R20 | the T3b test asserts `ci.yml` and its pins | CI green on main |
 | T5 | OLS branch moved as a branch | R12 | n/a | branch exists, not on main |
 | T6 | owner-setup.md and variable copy | R11, R10 | n/a | file lists every secret; variables except the flags set |
