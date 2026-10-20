@@ -32,6 +32,7 @@
 | `scripts/agent/release-cli.mjs` | repo = `PRODUCT_REPO \|\| GITHUB_REPOSITORY` | R18 |
 | six workflows | triggers (R15), `PRODUCT_REPO` env, App tokens for former workflow-token calls (R17), checkouts (R19), `if:` on identifiers (R16) | R15 to R19 |
 | `scripts/lib/repo-split-workflows.test.mjs` (new) | the T3 shape assertions | R15, R17 to R19 |
+| layout of a product job | this repo checked out, `scripts/` copied to `$RUNNER_TEMP/pluton-ai-agent`, then the product checked out at the root (it replaces the workspace); the scripts run from the copy | R19 |
 | `scripts/lib/agent-relay-event.test.mjs` (new) | rehydrate per type and per refusal | R16 |
 | existing workflow tests | expected values change only where R15 to R19 change them | R8 style |
 | `.github/workflows/ci.yml` (new) | `npm test` | R20 |
@@ -42,10 +43,12 @@ after? }`, strings or integers, at most 10 keys (R4).
 Alternatives weighed: (a) put the event body in the payload and keep the scripts unchanged: rejected, R5 forbids
 trusting it. (b) rehydrate inside each command: rejected, one place in `main()` covers every command. (c) check
 out this repo at the root and the product at `path: product`: rejected, claude-code-action and the release
-scripts work in the workspace root, so the product stays there.
+scripts work in the workspace root, so the product stays there. (d) this repo at `path: .pluton-ai-agent` beside the
+product: rejected, that folder sits inside the product tree (the agent could commit it, and the reviewer's checkout is
+the agent's branch, which could carry its own `.pluton-ai-agent/`), so the scripts are copied to `$RUNNER_TEMP`.
 
-What could break: the App installation must include pluton-timesheet (it does today) for every token; a product
-`npm run test:scripts` glob reaching `.pluton-ai-agent/` (it is a dot folder; checked when T7 runs); the relay of
+What could break: the App installation must include pluton-timesheet (it does today) for every token; a
+product-side tool reaching `$RUNNER_TEMP` (none known; checked when T7 runs); the relay of
 T8 must send exactly the keys above. A label the dispatcher sets is now set with the App token (the
 workflow token of pluton-ai-agent cannot write pluton-timesheet), and an App label starts workflows where a
 workflow-token label did not: `agent:building` and `agent:queued` now reach the relay, wake `dispatch` (which

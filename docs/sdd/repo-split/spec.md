@@ -103,9 +103,13 @@ workflow must stay in pluton-timesheet: the relay of R4.
   the fallback. A link to a run of this repository (`run_id`) keeps `github.repository`. Source: R6.
 - **R19.** A job that needs product files (the agent's working tree, the reviewer's branch, triage and sweep
   reading the repository, the release scripts' git ancestry, `scripts/staging-smoke.mjs`) must check out
-  `repository: Thitic9203/pluton-timesheet` at the workspace root with the job's App token, and this repository's
-  scripts at `path: .pluton-ai-agent`, listed in the product checkout's `.git/info/exclude` so the agent can never
-  commit them. A job that needs only this repository's scripts checks out this repository as before. Source: R6.
+  `repository: Thitic9203/pluton-timesheet` at the workspace root with the job's App token and
+  `persist-credentials: false`. Before that checkout, the job checks out this repository and copies its
+  `scripts/` to `$RUNNER_TEMP/pluton-ai-agent/scripts`, and runs this repository's scripts only from there: outside
+  the product tree, so the agent can never commit them and a `.pluton-ai-agent/` planted on an agent branch is never
+  run (a `path:` checkout inside the workspace would sit inside the product tree, and the reviewer's checkout is the
+  agent's branch). A job that needs only this repository's scripts checks out this repository as before, without a
+  `ref:` (a dispatch or a schedule runs on the default branch). Source: R6.
 - **R20.** pluton-ai-agent's `.github/workflows/ci.yml` must run on every `push` and `pull_request`, on
   `ubuntu-latest`, `actions/checkout` and `actions/setup-node` (node 22) at the exact pins the moved workflows
   use, then `npm test`, with `permissions: contents: read`. Source: R9.
