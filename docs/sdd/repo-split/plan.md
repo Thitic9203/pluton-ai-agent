@@ -21,6 +21,33 @@
    main thread with `gh variable set`, except the three enable flags (R10).
 7. Prove (R10): `workflow_dispatch` triage and `dry_run` sweep in pluton-ai-agent against pluton-timesheet.
 
+### Phase A detail for T2 to T4 (R14 to R20)
+
+| File | Change | Rules |
+| :--- | :--- | :--- |
+| `scripts/lib/doc-links.test.mjs` (new) | walks `docs/**/*.md`, strips fences and code spans, resolves every `](rel)` link against the file; fails on a missing target | R14 |
+| `docs/**/*.md` | rewrite each broken relative link to `https://github.com/Thitic9203/pluton-timesheet/blob/main/<path resolved as in pluton-timesheet>` (the file's old location is its new location, the copy was flat) | R14 |
+| `scripts/agent/relay-event.mjs` (new) | `TYPES` map dispatch type to old event name; `rehydrate({ type, payload }, gh)` returns `{ eventName, event }` read from the API | R16 |
+| `scripts/agent/cli.mjs` | `main()` rehydrates when `GITHUB_EVENT_NAME` is `repository_dispatch`; repo = `PRODUCT_REPO \|\| GITHUB_REPOSITORY`; new command `event` writes `name`, `action`, `number`, `label`, `sender` outputs (for `slack-label`) | R16, R18 |
+| `scripts/agent/release-cli.mjs` | repo = `PRODUCT_REPO \|\| GITHUB_REPOSITORY` | R18 |
+| six workflows | triggers (R15), `PRODUCT_REPO` env, App tokens for former workflow-token calls (R17), checkouts (R19), `if:` on identifiers (R16) | R15 to R19 |
+| `scripts/lib/repo-split-workflows.test.mjs` (new) | the T3 shape assertions | R15, R17 to R19 |
+| `scripts/lib/agent-relay-event.test.mjs` (new) | rehydrate per type and per refusal | R16 |
+| existing workflow tests | expected values change only where R15 to R19 change them | R8 style |
+| `.github/workflows/ci.yml` (new) | `npm test` | R20 |
+
+Data shape, `client_payload`: `{ action?, number?, label?, comment_id?, review_id?, run_id?, sha?, context?, before?,
+after? }`, strings or integers, at most 10 keys (R4).
+
+Alternatives weighed: (a) put the event body in the payload and keep the scripts unchanged: rejected, R5 forbids
+trusting it. (b) rehydrate inside each command: rejected, one place in `main()` covers every command. (c) check
+out this repo at the root and the product at `path: product`: rejected, claude-code-action and the release
+scripts work in the workspace root, so the product stays there.
+
+What could break: the App installation must include pluton-timesheet (it does today) for every token; a product
+`npm run test:scripts` glob reaching `.pluton-ai-agent/` (it is a dot folder; checked when T7 runs); the relay of
+T8 must send exactly the keys above.
+
 ## Phase B, one pluton-timesheet round (R4, R7, R8, R10)
 
 1. Add `.github/workflows/agent-relay.yml` with the event filter of today's `agent.yml` job `if:`; sends

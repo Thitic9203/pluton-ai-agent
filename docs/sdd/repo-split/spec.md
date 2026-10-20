@@ -64,10 +64,54 @@ workflow must stay in pluton-timesheet: the relay of R4.
 - **R13.** No new paid service: private-repo Actions minutes come from the account's existing free quota (Q6), and
   the Mac runner is not registered to the new repo without the owner's approval (global rules 3 and 23).
 
+### Receiver wiring in pluton-ai-agent (T2 to T4; source: owner popup 20 Oct 2026 "Event relay (แนะนำ)", R2, R4 to R6, R9)
+
+- **R14.** When a markdown file under `docs/**` of pluton-ai-agent links to a relative path that does not exist in
+  pluton-ai-agent, the link must instead be the absolute URL
+  `https://github.com/Thitic9203/pluton-timesheet/blob/main/<path>`; a link to a file present in pluton-ai-agent
+  must stay relative. `scripts/lib/doc-links.test.mjs` must fail on any relative link (outside code spans and
+  fences) that resolves to a missing file. Source: R2.
+- **R15.** Each pluton-timesheet event the agent acts on must reach pluton-ai-agent as `repository_dispatch` of one
+  type: `ts-issues` (was `issues`), `ts-issue-comment` (`issue_comment`), `ts-pr-review` (`pull_request_review`),
+  `ts-ci-completed` (`workflow_run` of `CI`), `ts-status` (`status`), `ts-release-next` (`push` of `release/next`),
+  `ts-main-push` (`push` of `main`, for `agent-main-audit.yml`), `ts-deploy-production` (`workflow_run` of `Deploy
+  production`, for `deploy-agent-office.yml`). `client_payload` carries only these identifiers: `action` (the
+  original event action), `number`, `label`, `comment_id`, `review_id`, `run_id`, `sha`, `context`, `before`,
+  `after`. No workflow of pluton-ai-agent may trigger on `issues`, `issue_comment`, `pull_request_review`,
+  `status`, or on `workflow_run` of a workflow that is not defined in pluton-ai-agent itself; `schedule` and
+  `workflow_dispatch` stay. Source: R4.
+- **R16.** When a dispatch arrives, `scripts/agent/relay-event.mjs` must rebuild the event the scripts judged
+  before the split from the pluton-timesheet API, using the payload only for identifiers: the issue, comment,
+  pull request, CI run, commit statuses and branches are read by number; the actor of a label change is read from
+  the issue timeline, never the payload; a payload whose claim the API does not confirm (a label the issue does not
+  carry, an issue that is not closed, a comment of another issue, a run that is not `CI` or not completed, a status
+  context that is not on that sha, a main range not on main) becomes an event the dispatcher ignores. The job
+  `if:` filters keep their logic on identifiers (`github.event.action`, `client_payload.action`,
+  `client_payload.label`) only; every decision that read the body (comment text, sender, review state, labels
+  of the issue) is re-judged by the scripts from the API. Source: R5, Decision Q2.
+- **R17.** Every job that called the pluton-timesheet API with the workflow token (`github.token`) must use an
+  App token minted with `owner: Thitic9203`, `repositories: pluton-timesheet` and the `permission-*` inputs equal
+  to the job's former `permissions:` block (the workflow token reaches only its own repository). Every existing
+  App token step keeps its `permission-*` inputs and gains `owner` and `repositories`. Source: R6, Decision Q3.
+- **R18.** Every workflow must set `env: PRODUCT_REPO: Thitic9203/pluton-timesheet`; every `gh` or API call meant
+  for the product must name `$PRODUCT_REPO`, and the scripts must read `PRODUCT_REPO` with `GITHUB_REPOSITORY` as
+  the fallback. A link to a run of this repository (`run_id`) keeps `github.repository`. Source: R6.
+- **R19.** A job that needs product files (the agent's working tree, the reviewer's branch, triage and sweep
+  reading the repository, the release scripts' git ancestry, `scripts/staging-smoke.mjs`) must check out
+  `repository: Thitic9203/pluton-timesheet` at the workspace root with the job's App token, and this repository's
+  scripts at `path: .pluton-ai-agent`, listed in the product checkout's `.git/info/exclude` so the agent can never
+  commit them. A job that needs only this repository's scripts checks out this repository as before. Source: R6.
+- **R20.** pluton-ai-agent's `.github/workflows/ci.yml` must run on every `push` and `pull_request`, on
+  `ubuntu-latest`, `actions/checkout` and `actions/setup-node` (node 22) at the exact pins the moved workflows
+  use, then `npm test`, with `permissions: contents: read`. Source: R9.
+
 ## Open questions
 
 1. `deploy-agent-office.yml` uses `vars.RUNNER` (the Mac). Can its jobs run on `ubuntu-latest`, or does the owner
-   approve registering the Mac runner to pluton-ai-agent (global rule 23)?
+   approve registering the Mac runner to pluton-ai-agent (global rule 23)? Its `runs-on` lines are kept as they are
+   until this is decided. Linked: its jobs run `node scripts/runner-power.mjs` and its `paths:` filters name
+   product files (`functions/_lib/verifiedRequest.ts`, `src/services/*.ts`); neither exists in pluton-ai-agent,
+   so the same decision settles whether those steps and filters go or are fetched from the product.
 2. pluton-timesheet main is red (CI run 39371091028, E2E, management role) and constraint 12 holds the cutover round
    until it is root caused. Owner of that investigation: not assigned.
 3. R24 of ols-real refuses Jira comment bodies containing `||`; is there a confirmed rule that wants Jira tables?
@@ -86,3 +130,10 @@ workflow must stay in pluton-timesheet: the relay of R4.
 - R11: owner-setup.md lists every secret; `gh secret list` in pluton-ai-agent shows each name.
 - R12: `feat/ols-retest-procedure-guards` exists in pluton-ai-agent and is not on its main.
 - R13: no new paid service; no runner registered without approval.
+- R14: `node --test scripts/lib/doc-links.test.mjs` passes; it failed on the tree before T2.
+- R15, R17, R18, R19: `scripts/lib/repo-split-workflows.test.mjs` asserts the triggers, every token step's
+  `owner` and `repositories`, every product checkout's `repository`, `PRODUCT_REPO` on every workflow, and no
+  product `gh` call on `GITHUB_REPOSITORY`.
+- R16: `scripts/lib/agent-relay-event.test.mjs` asserts each type rebuilds the old event from a fake API and
+  each unconfirmed claim becomes ignored.
+- R20: `ci.yml` exists with those pins; its first run is green on main (after Actions are enabled, R10).
