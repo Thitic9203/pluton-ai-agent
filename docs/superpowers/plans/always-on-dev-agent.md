@@ -117,7 +117,7 @@
   | 8 | PR ของ agent ไม่นับในเพดาน 7 PR แต่ยังต้องรีวิวจนจบ · ต้องมีโค้ดใน `pr-budget.mjs` ก่อน (ข้อ 13) |
   | 12 | ไม่มีข้อยกเว้น: งานรีวิวแยกของ Q5 ต้อง APPROVE ทุก PR ของ agent ที่แตะ `src/`, rules หรือ scripts |
 
-- **Accepted risks** (บันทึกตามกฎ global ข้อ 7 ใน [RISK_REGISTER](../../RISK_REGISTER.md) R80 ถึง R83, R88 และ R89 บน `main` · สถานะ 16 Oct 2026: R80, R88, R89 accepted (owner 15 Oct 2026) · R82, R83 open · R81 retired · ตรวจซ้ำ 17 Oct 2026 สถานะเดิม และเพิ่ม R103 open: agent เริ่มงานโดยเจ้าของไม่ได้ติด label เอง ผ่าน PO/BA triage แถว 18):
+- **Accepted risks** (บันทึกตามกฎ global ข้อ 7 ใน [RISK_REGISTER](https://github.com/Thitic9203/pluton-timesheet/blob/main/docs/RISK_REGISTER.md) R80 ถึง R83, R88 และ R89 บน `main` · สถานะ 16 Oct 2026: R80, R88, R89 accepted (owner 15 Oct 2026) · R82, R83 open · R81 retired · ตรวจซ้ำ 17 Oct 2026 สถานะเดิม และเพิ่ม R103 open: agent เริ่มงานโดยเจ้าของไม่ได้ติด label เอง ผ่าน PO/BA triage แถว 18):
   - **เลขชนรอบสอง (ตรวจ 15 Oct 2026):** บน `main` R84 และ R85 เป็นของ Agent Office และ R86 กับ R87 เป็นของแผน E2E แล้ว (R86 จาก commit `8c7cdc474` และ R87 เรื่อง constraint 17) เลขที่ว่างถัดไปคือ R88 และ R89 · แก้แล้ว: R88 และ R89 ขึ้น `main` ที่ `aa0c349ef` (เปลี่ยนเลขจาก R86, R87 ตามคอมเมนต์ปิด PR #494)
   1. ใช้ token ของ subscription Max ใน CI โดยไม่มีคนเฝ้า ยังไม่มีแหล่งใดยืนยันว่าเข้าข้อยกเว้นของ Consumer Terms §3 ข้อ 7 (R80 accepted โดยเจ้าของ 15 Oct 2026 · เดิม "ต้องทบทวนก่อนข้อ 5 วาง token")
   2. ~~ทุก issue ใหม่จะเริ่ม agent~~ เปลี่ยน 2026-10-14: เริ่มเฉพาะ `agent:ready` (Decisions Q1, R81 retired)
@@ -156,7 +156,7 @@
 
 ### Decisions (2026-10-14)
 
-ตัดสินโดย main thread ตามคำสั่งเจ้าของ 14 Oct 2026 "ทำต่อเลยไม่ถามเรา เราไม่อยู่" และ "ทำต่อยาวๆ เลยไม่ต้องถาม" ทุกข้อเลือกทางที่ไม่มีค่าใช้จ่าย และอ้างแหล่งที่มา (hard constraint 13) เจ้าของเปลี่ยนได้ทุกข้อ บันทึกใน [DECISION_LOG](../../DECISION_LOG.md) หัวข้อ "Always-on dev agent: six open questions decided by the main thread"
+ตัดสินโดย main thread ตามคำสั่งเจ้าของ 14 Oct 2026 "ทำต่อเลยไม่ถามเรา เราไม่อยู่" และ "ทำต่อยาวๆ เลยไม่ต้องถาม" ทุกข้อเลือกทางที่ไม่มีค่าใช้จ่าย และอ้างแหล่งที่มา (hard constraint 13) เจ้าของเปลี่ยนได้ทุกข้อ บันทึกใน [DECISION_LOG](https://github.com/Thitic9203/pluton-timesheet/blob/main/docs/DECISION_LOG.md) หัวข้อ "Always-on dev agent: six open questions decided by the main thread"
 
 | Q | ตัดสิน | แหล่งที่มา |
 | :---: | :--- | :--- |

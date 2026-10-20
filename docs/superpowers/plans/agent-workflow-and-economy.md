@@ -23,7 +23,7 @@
 | งานจากหลายโปรเจกต์ (OLS QA บน Jira, ซ่อม e2e ใน `ols-qa-e2e`) | กำลังออกแบบในแมพ [multi-project-intake](../../wayfinder/multi-project-intake/MAP.md): ร่างทุกชิ้นส่งเข้า DM Slack ของเจ้าของ ตอบ `passed` จึงทำต่อ | แมพ |
 | ภาพและการเคลื่อนไหวระดับ Sims 4 | ขึ้นแล้ว v57 ถึง v60 (Three.js r170, batching, พื้นผิว CC0, ป้ายโปรเจกต์, บทพูด, กลางคืน ฟ้า น้ำ ฝน ต้นไม้, ลานโชว์รถ, เรือ, ตัวละคร Quaternius) · ทำเมื่อเจ้าของสั่ง: ท่าเสริม HY-Motion, รถ Sketchfab คันอื่น | ข้อ 9a |
 
-**หลักที่ไม่เปลี่ยน:** agent ทุกตัวที่มีคำถาม ร่าง หรือเรื่องให้อนุมัติ ส่งเข้า DM Slack ของเจ้าของเป็นเธรดของตัวเอง แล้วรอจนเจ้าของตอบในเธรดนั้นจึงทำต่อ (เจ้าของ 14 Oct 2026: "หลักๆ agent ถ้ามีไรถามเรา ส่งแจ้งเราใน DM Slack แล้วเราจะไป รีพลาย แล้วคุณค่อยมาทำงานต่อ") · ไม่ใช้บริการเสียเงิน (ใช้แต่ของฟรีและ CC0) · ไม่แตะ production · เจ้าของเป็นคนเริ่มงานทุกใบด้วย `agent:ready` · ทุกการตัดสินใจบันทึกใน [DECISION_LOG](../../DECISION_LOG.md) และความเสี่ยงที่ยอมรับอยู่ใน [RISK_REGISTER](../../RISK_REGISTER.md) (R80 ถึง R85)
+**หลักที่ไม่เปลี่ยน:** agent ทุกตัวที่มีคำถาม ร่าง หรือเรื่องให้อนุมัติ ส่งเข้า DM Slack ของเจ้าของเป็นเธรดของตัวเอง แล้วรอจนเจ้าของตอบในเธรดนั้นจึงทำต่อ (เจ้าของ 14 Oct 2026: "หลักๆ agent ถ้ามีไรถามเรา ส่งแจ้งเราใน DM Slack แล้วเราจะไป รีพลาย แล้วคุณค่อยมาทำงานต่อ") · ไม่ใช้บริการเสียเงิน (ใช้แต่ของฟรีและ CC0) · ไม่แตะ production · เจ้าของเป็นคนเริ่มงานทุกใบด้วย `agent:ready` · ทุกการตัดสินใจบันทึกใน [DECISION_LOG](https://github.com/Thitic9203/pluton-timesheet/blob/main/docs/DECISION_LOG.md) และความเสี่ยงที่ยอมรับอยู่ใน [RISK_REGISTER](https://github.com/Thitic9203/pluton-timesheet/blob/main/docs/RISK_REGISTER.md) (R80 ถึง R85)
 
 **วิธีอ่านแหล่งที่มา:** ทุกแถวบอกที่มา `source:` คือสิ่งที่มีอยู่แล้ว (แผน, PR #494/#496, CLAUDE.md) · `judgment:` คือข้อเสนอของ main thread ที่ยังไม่มีแหล่งยืนยัน เจ้าของเปลี่ยนได้ทุกข้อ (hard constraint 13)
 
@@ -287,7 +287,7 @@ Head หักค่าใช้จ่ายทั้งหมดจากเง
 
 ## 8. Slack notifications
 
-คำสั่งเจ้าของ 14 Oct 2026: "การอัปเดตแจ้งเตือน ตั้งแต่เริ่มงาน ขอการตัดสินใจจากเรา หรือจบงาน แจ้งใน slack แบบที่เราเคยบอกไว้ในแพลน" · รูปแบบเดียวกับ [feedback-form-to-github-slack](feedback-form-to-github-slack.md) (source ทุกแถวด้านล่างอ้างแผนนั้น เว้นแต่ระบุ)
+คำสั่งเจ้าของ 14 Oct 2026: "การอัปเดตแจ้งเตือน ตั้งแต่เริ่มงาน ขอการตัดสินใจจากเรา หรือจบงาน แจ้งใน slack แบบที่เราเคยบอกไว้ในแพลน" · รูปแบบเดียวกับ [feedback-form-to-github-slack](https://github.com/Thitic9203/pluton-timesheet/blob/main/docs/superpowers/plans/feedback-form-to-github-slack.md) (source ทุกแถวด้านล่างอ้างแผนนั้น เว้นแต่ระบุ)
 
 | เรื่อง | ตัดสิน | ที่มา |
 | :--- | :--- | :--- |
@@ -321,7 +321,7 @@ Head หักค่าใช้จ่ายทั้งหมดจากเง
 source: เจ้าของ 14 Oct 2026 "หลักๆ agent ถ้ามีไรถามเรา ส่งแจ้งเราใน DM Slack แล้วเราจะไป รีพลาย แล้วคุณค่อยมาทำงานต่อ" และ "ถ้าเรา reply ว่า passed ก็ค่อยไปจัดการต่อได้" · ช่องว่างที่ต้องปิด: Decisions Q1 ของ always-on นับ `agent:ready` และ approve เฉพาะเมื่อบัญชี GitHub ของเจ้าของทำเอง (`isOwnerAct`) bot ทำแทนไม่ได้ และ bot อ่านประวัติ Slack ไม่ได้ (ข้อ 8) · ทั้งหมดในข้อนี้เป็น judgment จนกว่าเจ้าของตอบ
 
 1. **ส่งออก:** ทุกคำถาม ร่าง หรือ gate ส่งเป็นข้อความใหม่ใน DM ของเจ้าของ หนึ่งเรื่องต่อหนึ่งเธรด มีหัวเรื่อง ลิงก์ issue หรือ PR สรุปสั้น และบอกว่าตอบ `passed` เพื่ออนุมัติ หรือพิมพ์เหตุผลเพื่อให้แก้
-2. **อ่านคำตอบ:** worker ตั้งเวลาบน Mac แบบเดียวกับ `feedback-worker` ของ [feedback-form-to-github-slack](feedback-form-to-github-slack.md) อ่านเฉพาะเธรดที่ตัวเองเปิด ด้วย bot token ใน macOS Keychain (ต้องมี scope `im:history` ซึ่งยังไม่ได้ขอ) · นับเฉพาะข้อความจาก Slack user ID ของเจ้าของ คำตอบ `passed` (ตัดช่องว่าง ไม่สนตัวพิมพ์) คืออนุมัติ ข้อความอื่นคือคำสั่งแก้
+2. **อ่านคำตอบ:** worker ตั้งเวลาบน Mac แบบเดียวกับ `feedback-worker` ของ [feedback-form-to-github-slack](https://github.com/Thitic9203/pluton-timesheet/blob/main/docs/superpowers/plans/feedback-form-to-github-slack.md) อ่านเฉพาะเธรดที่ตัวเองเปิด ด้วย bot token ใน macOS Keychain (ต้องมี scope `im:history` ซึ่งยังไม่ได้ขอ) · นับเฉพาะข้อความจาก Slack user ID ของเจ้าของ คำตอบ `passed` (ตัดช่องว่าง ไม่สนตัวพิมพ์) คืออนุมัติ ข้อความอื่นคือคำสั่งแก้
 3. **ทางเลือกที่ต้องให้เจ้าของเลือก:**
    - **(ก) Slack แจ้งอย่างเดียว:** DM มีลิงก์ไปคอมเมนต์ `/approve` บน GitHub เจ้าของกดเอง Q1 ไม่เปลี่ยน ปลอดภัยสุด แต่ต้องเปิด GitHub
    - **(ข) `passed` ใน DM นับเป็นการอนุมัติ:** worker คอมเมนต์บน GitHub แทนเจ้าของพร้อม permalink ของข้อความ Slack และ gate นับคอมเมนต์ของ worker ที่มี permalink ตรวจได้ ต้องแก้ Q1 และเพิ่ม R ใหม่ใน RISK_REGISTER เรื่อง token Slack ที่ใครได้ไปจะอนุมัติแทนเจ้าของได้
