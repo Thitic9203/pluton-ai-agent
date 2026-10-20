@@ -33,8 +33,8 @@
  */
 
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { dirname, join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { spawnChecked } from '../lib/run-command.mjs';
 
@@ -794,13 +794,24 @@ export async function runTriageApply(env, gh, _event, _args, { fetchImpl = globa
   return { exit: 0, outputs: {} };
 }
 
+/**
+ * What the sweep reads (docs/sdd/repo-split/spec.md R19): the product checkout it runs in, never the
+ * folder of these scripts, which after the split is a copy of pluton-ai-agent outside that tree. The
+ * coverage module is the product's own (scripts/lib/e2e-coverage.mjs of pluton-timesheet main).
+ */
+export function sweepSources(cwd = process.cwd()) {
+  return { root: cwd, coverage: pathToFileURL(join(cwd, 'scripts/lib/e2e-coverage.mjs')).href };
+}
+
 async function runSweepCommand(env, gh) {
-  const { collectFindings, readSourceFiles, runSweep } = await load('sweep.mjs');
-  const root = fileURLToPath(new URL('../..', import.meta.url));
+  const { collectFindings, readSourceFiles, runSweep, SWEEP_BOT_LOGIN } = await load('sweep.mjs');
+  const { root, coverage: coverageUrl } = sweepSources();
   return runSweep({
     gh, env, now: Date.now(),
+    // repo-split R21: the App files after the split; the workflow token's posts from before still count.
+    botLogin: [env.AGENT_APP_LOGIN, SWEEP_BOT_LOGIN].filter(Boolean),
     findings: async ({ openIssues }) => {
-      const { coverage } = await import(new URL('../lib/e2e-coverage.mjs', import.meta.url).href);
+      const { coverage } = await import(coverageUrl);
       return collectFindings({ openIssues, files: readSourceFiles(root), coverage: coverage() });
     },
   });
@@ -845,6 +856,9 @@ export function eventOutputs(eventName, event) {
     number: event?.issue?.number ?? event?.pull_request?.number ?? '',
     label: event?.label?.name ?? '',
     sender: event?.sender?.login ?? '',
+    sha: event?.workflow_run?.head_sha ?? event?.sha ?? event?.after ?? '',
+    branch: event?.workflow_run?.head_branch ?? '',
+    run_id: event?.workflow_run?.id ?? '',
   };
 }
 

@@ -134,3 +134,10 @@ test('findDispatchedRun: none yet waits, and more than one bot dispatch is refus
   assert.equal(two.run, null);
   assert.match(two.problem, /2 production runs/);
 });
+
+test('repo-split R21: after the split the App dispatches production, so its login finds the run', () => {
+  const APP = 'taskfolio-dev-agent[bot]';
+  const runs = [run(7, { triggering_actor: { login: APP } }), run(8)];
+  assert.deepEqual(findDispatchedRun(runs, '2026-10-15T10:00:00Z', APP), { run: runs[0], problem: null });
+  assert.deepEqual(findDispatchedRun(runs, '2026-10-15T10:00:00Z'), { run: runs[1], problem: null }, 'the default stays the workflow token');
+});

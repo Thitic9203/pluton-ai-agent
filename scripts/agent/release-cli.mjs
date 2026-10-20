@@ -139,7 +139,8 @@ export async function runRelease(env, { gh, isAncestor, now = () => new Date(), 
   for (let i = 0; i < maxPolls; i += 1) {
     await sleep(pollMs);
     const runs = (await gh.get('/repos/{repo}/actions/workflows/deploy-production.yml/runs?event=workflow_dispatch&branch=main&per_page=20')).workflow_runs;
-    const found = findDispatchedRun(runs, since);
+    // docs/sdd/repo-split/spec.md R21: the App token dispatches production after the split.
+    const found = findDispatchedRun(runs, since, env.AGENT_APP_LOGIN || undefined);
     if (found.problem) throw new Error(found.problem);
     run = found.run;
     if (run?.status === 'completed') break;

@@ -19,6 +19,7 @@ export const TYPES = Object.freeze({
   'ts-issue-comment': 'issue_comment',
   'ts-pr-review': 'pull_request_review',
   'ts-ci-completed': 'workflow_run',
+  'ts-ci-main-completed': 'workflow_run',
   'ts-status': 'status',
   'ts-release-next': 'push',
   'ts-main-push': 'push',
@@ -34,7 +35,7 @@ const SHA_RE = /^[0-9a-f]{40}$/;
 const NAME_RE = /^[A-Za-z0-9_.:/ -]{1,100}$/;
 const INT_KEYS = new Set(['number', 'comment_id', 'review_id', 'run_id']);
 const SHA_KEYS = new Set(['sha', 'before', 'after']);
-const RUN_NAME = Object.freeze({ 'ts-ci-completed': 'CI', 'ts-deploy-production': 'Deploy production' });
+const RUN_NAME = Object.freeze({ 'ts-ci-completed': 'CI', 'ts-ci-main-completed': 'CI', 'ts-deploy-production': 'Deploy production' });
 const PUSH_REF = Object.freeze({ 'ts-main-push': 'main', 'ts-release-next': 'release/next' });
 
 /** Why a payload is refused before any read, or null. */
@@ -121,6 +122,9 @@ async function runEvent(gh, p, type) {
   if (!run) return { why: `run ${p.run_id} does not exist` };
   if (run.name !== RUN_NAME[type]) return { why: `run ${p.run_id} is ${run.name}, not ${RUN_NAME[type]}` };
   if (run.status !== 'completed') return { why: `run ${p.run_id} is ${run.status}, not completed` };
+  if (type === 'ts-ci-main-completed' && !(run.event === 'push' && run.head_branch === 'main')) {
+    return { why: `run ${p.run_id} is not CI of a push to main` };
+  }
   return { event: { action: 'completed', workflow_run: run } };
 }
 

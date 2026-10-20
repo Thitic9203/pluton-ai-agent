@@ -117,12 +117,12 @@ export const WORKFLOW_TOKEN_LOGIN = 'github-actions[bot]';
  * for it (review of e4f603f69, item 8). Exactly one may match: none yet is `{ run: null, problem: null }`
  * (keep waiting), two or more is a problem and nothing is closed.
  */
-export function findDispatchedRun(runs, since) {
+export function findDispatchedRun(runs, since, login = WORKFLOW_TOKEN_LOGIN) {
   const after = Date.parse(since);
   const hits = (runs ?? []).filter((r) => r.event === 'workflow_dispatch' && r.head_branch === 'main'
-    && r.triggering_actor?.login === WORKFLOW_TOKEN_LOGIN && Date.parse(r.created_at) >= after);
+    && r.triggering_actor?.login === login && Date.parse(r.created_at) >= after);
   if (hits.length > 1) {
-    return { run: null, problem: `${hits.length} production runs dispatched by ${WORKFLOW_TOKEN_LOGIN} since ${since}; cannot tell which is this release, so no issue was closed` };
+    return { run: null, problem: `${hits.length} production runs dispatched by ${login} since ${since}; cannot tell which is this release, so no issue was closed` };
   }
   return { run: hits[0] ?? null, problem: null };
 }

@@ -32,7 +32,7 @@ const labeledTimeline = (label, actor, event = 'labeled') => [
 test('R15: the types map to the old event names, and the payload keys are identifiers only', () => {
   assert.deepEqual(TYPES, {
     'ts-issues': 'issues', 'ts-issue-comment': 'issue_comment', 'ts-pr-review': 'pull_request_review',
-    'ts-ci-completed': 'workflow_run', 'ts-status': 'status', 'ts-release-next': 'push', 'ts-main-push': 'push',
+    'ts-ci-completed': 'workflow_run', 'ts-ci-main-completed': 'workflow_run', 'ts-status': 'status', 'ts-release-next': 'push', 'ts-main-push': 'push',
     'ts-deploy-production': 'workflow_run',
   });
   assert.ok(PAYLOAD_KEYS.length <= 10, 'GitHub allows at most 10 top-level client_payload keys');
@@ -150,6 +150,21 @@ test('R16: ts-ci-completed reads the run; only a completed run named CI counts',
   }
 });
 
+test('R15, R16: ts-ci-main-completed needs CI of a main branch run started by a git event', async () => {
+  const run = { id: 31, name: 'CI', status: 'completed', event: 'push', head_branch: 'main', head_sha: SHA };
+  const gh = fakeGh({
+    '/repos/{repo}/actions/runs/31': run,
+    '/repos/{repo}/actions/runs/32': { ...run, id: 32, head_branch: 'agent/issue-7' },
+    '/repos/{repo}/actions/runs/33': { ...run, id: 33, event: 'pull_request' },
+  });
+  const ok = await rehydrate({ type: 'ts-ci-main-completed', payload: { run_id: 31 } }, gh);
+  assert.equal(ok.event.workflow_run.head_sha, SHA);
+  for (const run_id of [32, 33]) {
+    const r = await rehydrate({ type: 'ts-ci-main-completed', payload: { run_id } }, gh);
+    assert.equal(r.event.action, 'relay-unconfirmed', String(run_id));
+  }
+});
+
 test('R16: ts-deploy-production needs a completed run named Deploy production', async () => {
   const gh = fakeGh({ '/repos/{repo}/actions/runs/21': { id: 21, name: 'Deploy production', status: 'completed', conclusion: 'success' } });
   const r = await rehydrate({ type: 'ts-deploy-production', payload: { run_id: 21 } }, gh);
@@ -197,7 +212,9 @@ test('R16, R18: cli main() rebuilds a dispatch from the product API before any c
   const { tmpdir } = await import('node:os');
   assert.equal(productRepo({ PRODUCT_REPO: 'Thitic9203/pluton-timesheet', GITHUB_REPOSITORY: 'Thitic9203/pluton-ai-agent' }), 'Thitic9203/pluton-timesheet');
   assert.equal(productRepo({ GITHUB_REPOSITORY: 'Thitic9203/pluton-timesheet' }), 'Thitic9203/pluton-timesheet');
-  assert.deepEqual(eventOutputs('issues', {}), { name: 'issues', action: '', number: '', label: '', sender: '' });
+  assert.deepEqual(eventOutputs('issues', {}), { name: 'issues', action: '', number: '', label: '', sender: '', sha: '', branch: '', run_id: '' });
+  assert.deepEqual(eventOutputs('workflow_run', { action: 'completed', workflow_run: { id: 11, head_sha: SHA, head_branch: 'main' } }),
+    { name: 'workflow_run', action: 'completed', number: '', label: '', sender: '', sha: SHA, branch: 'main', run_id: 11 });
 
   const dir = mkdtempSync(join(tmpdir(), 'relay-'));
   const eventPath = join(dir, 'event.json');

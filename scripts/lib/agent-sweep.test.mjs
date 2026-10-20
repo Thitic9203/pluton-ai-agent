@@ -437,3 +437,21 @@ test('only the bot\'s own posts count as evidence already posted (review of #499
   await runSweep({ gh: other, env: { ...ENV, AGENT_SWEEP_FILE: '1' }, now: NOW, findings: () => [next], botLogin: app.login });
   assert.deepEqual(other.writes, [], 'the login is a parameter');
 });
+
+test('repo-split R21: evidence counts from the App and from the workflow token that filed before the split', () => {
+  const APP = 'taskfolio-dev-agent[bot]';
+  const posts = [
+    { user: { login: APP, type: 'Bot' }, body: 'after' },
+    { user: { login: SWEEP_BOT_LOGIN, type: 'Bot' }, body: 'before' },
+    { user: { login: 'someone', type: 'User' }, body: 'theirs' },
+  ];
+  assert.deepEqual(postedBy(posts, [APP, SWEEP_BOT_LOGIN]), ['after', 'before']);
+  assert.deepEqual(postedBy(posts, APP), ['after']);
+});
+
+test('repo-split R19: the sweep reads the product tree it runs in, not the folder of its own scripts', async () => {
+  const { sweepSources } = await import('../agent/cli.mjs');
+  const s = sweepSources('/w/product');
+  assert.equal(s.root, '/w/product');
+  assert.equal(s.coverage, 'file:///w/product/scripts/lib/e2e-coverage.mjs');
+});

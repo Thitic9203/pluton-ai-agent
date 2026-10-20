@@ -189,12 +189,14 @@ export function duplicateComment(finding, { date, runUrl }) {
 }
 
 /**
- * The bodies of the posts (an issue or its comments) that `botLogin` wrote as a Bot. Only these say what
+ * The bodies of the posts (an issue or its comments) that `botLogin` (one login, or a list: repo-split R21)
+ * wrote as a Bot. Only these say what
  * evidence the sweep already gave, so another account cannot quiet it by pasting a digest (review of
  * PR #499, item 4).
  */
 export function postedBy(posts, botLogin) {
-  return (posts ?? []).filter((p) => p?.user?.login === botLogin && p?.user?.type === 'Bot').map((p) => p.body);
+  const logins = [].concat(botLogin);
+  return (posts ?? []).filter((p) => logins.includes(p?.user?.login) && p?.user?.type === 'Bot').map((p) => p.body);
 }
 
 /** True when the digest of this finding appears in none of the texts (the bodies postedBy() returns). */
