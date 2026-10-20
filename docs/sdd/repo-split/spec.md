@@ -128,14 +128,24 @@ workflow must stay in pluton-timesheet: the relay of R4.
    until this is decided. Linked: its jobs run `node scripts/runner-power.mjs` and its `paths:` filters name
    product files (`functions/_lib/verifiedRequest.ts`, `src/services/*.ts`); neither exists in pluton-ai-agent,
    so the same decision settles whether those steps and filters go or are fetched from the product.
-2. pluton-timesheet main is red (CI run 39371091028, E2E, management role) and constraint 12 holds the cutover round
-   until it is root caused. Owner of that investigation: not assigned.
+2. ~~pluton-timesheet main is red (CI run 39371091028, E2E, management role) and constraint 12 holds the cutover round
+   until it is root caused. Owner of that investigation: not assigned.~~ Root caused 20 Oct 2026: `e2e/support/paths.ts`
+   ignored `notHomeFor` (stale expected value after management-logs-time E6); the fix 29fac5fc0 and 4fa6cb21e is on
+   pluton-timesheet origin/main. Closed once a main CI run on it is green.
 3. R24 of ols-real refuses Jira comment bodies containing `||`; is there a confirmed rule that wants Jira tables?
 4. The Agent Office snapshot reads pluton-timesheet with the App token (R17), but two of its checks still describe
    the old single repository: `releaseProdRun` matches `github-actions[bot]` (R21), and `runsInProgress(repo,
    SWEEP_WORKFLOW)` looks for the sweep run in the product, where it no longer runs. Its App token names
    `repositories: pluton-timesheet` only. Which repository the board reads each run from is the owner's call
    with open question 1.
+5. From the independent review of 7fe3ba0 (20 Oct 2026, APPROVE, non-blocking; reviews stop at two passes,
+   CLAUDE.md constraint 23): (a) `relay-event.mjs:115-117` accepts a `ts-pr-review` dispatch without `review_id`,
+   so a forged dispatch can make `merge-check` run early (its result is unchanged); require `review_id` as
+   `statusEvent` requires sha and context? (b) replays of an old real comment, label or CI run are not detected
+   (extra agent run, duplicate Slack notice, re-label from an old sha; gates and merges are still judged from
+   history); require the newest of its kind? (c) the triage judge job now holds `AGENT_APP_PRIVATE_KEY` beside a
+   model reading untrusted issue text (token minted read-only, Bash disallowed): record in RISK_REGISTER at the
+   cutover; (d) `--add-dir $RUNNER_TEMP/pluton-ai-agent/docs` lets the agent write to a copy nothing runs from.
 
 ## Done when
 
