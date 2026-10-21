@@ -1,9 +1,9 @@
 # แผนทีม AI Agent: รับงานจากหลายโปรเจกต์ใน Jira และ GitHub ร่วมกับ 7 ฝ่าย
 
 > **สถานะ:** ร่างเพื่อคุยกับทีมก่อนเริ่มพัฒนา (draft for team review) · ยังไม่เริ่มสร้างตามแผนนี้ · เจ้าของแผน: @Thitic9203 ·
-> ปรับครั้งล่าสุด 21 Oct 2026 (รอบสอง: รีวิวด้วยสกิล agent-designer แล้วเติมสถาปัตยกรรม สัญญาส่งต่อ เครื่องมือ สิทธิ์ งบ การวัดผล)
+> ปรับครั้งล่าสุด (รอบสอง: รีวิวด้วยสกิล agent-designer แล้วเติมสถาปัตยกรรม สัญญาส่งต่อ เครื่องมือ สิทธิ์ งบ การวัดผล)
 >
-> **ที่มา:** เจ้าของ 21 Oct 2026 "ปรับแพลนในเรโป ต้องการโฟกัสการทำงาน AI Agent ที่รองรับงานจากหลายโปรเจ็คใน Jira, GitHub โดยผู้ร่วมงานจะมีหลายฝ่าย
+> **ที่มา:** เจ้าของ "ปรับแพลนในเรโป ต้องการโฟกัสการทำงาน AI Agent ที่รองรับงานจากหลายโปรเจ็คใน Jira, GitHub โดยผู้ร่วมงานจะมีหลายฝ่าย
 > เช่น PO BA Tech Lead Dev QA Lead QA PM ... ปรับแพลนมาก่อน ยังไม่ต้องเริ่มทำ เราต้องเอาแพลนไปคุยกับทีม" · รอบสอง: "รีวิวและใส่รายละเอียดในแพลนให้ครบถ้วน
 > พร้อมที่จะนำไปคุยกับทีมเพื่อเริ่มพัฒนา"
 >
@@ -24,7 +24,7 @@
 > **หน้าสำหรับคุยกับทีม (มีภาพรวมและกระบวนการเป็นภาพ):** [แผนทีม AI Agent](https://claude.ai/artifact/9tWDnQzdMpv2QgBmWqq3qd)
 
 **ที่มา:** งานของทีมกระจายอยู่หลายที่ ทั้ง ticket ใน Jira (เช่น OLS) และ issue ใน GitHub (เช่น Taskfolio) · งานร่างหลายอย่างทำซ้ำทุกใบ
-เช่น เขียน AC, เทสเคส, test plan และสรุปสถานะ · ตัวอย่าง: OLS มี story ที่รอเติมรายละเอียดจาก PO/BA 6 ใบ (นับเมื่อ 20 Oct 2026, แมพ agent-all-roles A1)
+เช่น เขียน AC, เทสเคส, test plan และสรุปสถานะ · ตัวอย่าง: OLS มี story ที่รอเติมรายละเอียดจาก PO/BA 6 ใบ (แมพ agent-all-roles A1)
 
 **ความสำคัญ:**
 
@@ -56,14 +56,14 @@ graph TD
 
 | หลัก | ที่มา |
 | :--- | :--- |
-| agent **เริ่มงานเอง** ทุกวัน คนไม่ต้องสั่ง | เจ้าของ 20 Oct 2026 "Agent ทำเองอัตโนมัติทุกวัน ทุกครั้งไม่ต้องให้บอกนะ" |
-| **จุดอนุมัติคงเดิม**: agent ร่าง คนอนุมัติ ก่อนเขียนกลับ | เจ้าของ popup 20 Oct 2026 "คงจุดอนุมัติเดิม" |
+| agent **เริ่มงานเอง** ทุกวัน คนไม่ต้องสั่ง | เจ้าของ "Agent ทำเองอัตโนมัติทุกวัน ทุกครั้งไม่ต้องให้บอกนะ" |
+| **จุดอนุมัติคงเดิม**: agent ร่าง คนอนุมัติ ก่อนเขียนกลับ | เจ้าของ popup "คงจุดอนุมัติเดิม" |
 | agent รับเฉพาะงานที่ **ติด label `agent`** (Jira) หรือ `agent:ready` (GitHub) | A4, A5 ของแมพ agent-all-roles · Decisions Q1 ของแผน always-on |
 | agent ไม่ deploy production เอง | แผน always-on "ไม่ทำใน pilot" |
 | สเปกก่อนโค้ดทุกครั้ง (spec, plan, tasks) | CLAUDE.md hard constraint 22 |
 | งาน Jira รันบน GitHub Actions ใน repo นี้ ยกเว้นขั้นที่ต้องเปิดเว็บใน VPN ของลูกค้า (รันบน Mac runner `ols-e2e`) | A3, A7 ของแมพ agent-all-roles |
-| โค้ดของ agent อยู่ใน `pluton-ai-agent` แยกจากโค้ดของ product | เจ้าของ 20 Oct 2026, spec [repo-split](../sdd/repo-split/spec.md) |
-| การประเมินขนาดงานทำร่วมกันทุกบทบาท ไม่ใช่ฝ่ายเดียว | เจ้าของ popup 20 Oct 2026 (A4) |
+| โค้ดของ agent อยู่ใน `pluton-ai-agent` แยกจากโค้ดของ product | เจ้าของ, spec [repo-split](../sdd/repo-split/spec.md) |
+| การประเมินขนาดงานทำร่วมกันทุกบทบาท ไม่ใช่ฝ่ายเดียว | เจ้าของ popup (A4) |
 
 ## 3. สถาปัตยกรรม
 
@@ -105,7 +105,7 @@ graph LR
 
 ## 3a. อ้างอิงหลักการ ADLC: agent ลงมือ คนอนุมัติ
 
-ที่มา: เจ้าของ 21 Oct 2026 ส่งภาพ "SDLC vs ADLC" ของ Limestone Digital (2026) "เอาฝั่งขวามือ มาใช้ในแผนอย่างไรได้บ้าง ... บอกด้วยว่า อ้างอิงหลักการนี้ๆ"
+ที่มา: เจ้าของ ส่งภาพ "SDLC vs ADLC" ของ Limestone Digital (2026) "เอาฝั่งขวามือ มาใช้ในแผนอย่างไรได้บ้าง ... บอกด้วยว่า อ้างอิงหลักการนี้ๆ"
 · ADLC (Agentic Development Lifecycle) = วงจรเดิม แต่ agent ลงมือ และคนอนุมัติที่ประตู · หลักสำคัญในภาพ: "Agents implement. Engineers
 approve." และ "Architecture stays with engineers."
 
@@ -152,7 +152,7 @@ approve." และ "Architecture stays with engineers."
 
 ### 4.0 งาน QA: ใช้สกิล Helix ทุกด่าน คน QA อนุมัติสูงสุด
 
-เจ้าของ 21 Oct 2026: "อยากให้เพิ่มในส่วนงาน QA ให้ครบว่าใช้สกิลทดสอบจาก helix ที่เราทำไว้ทั้งหมดในทุกขั้นตอน ... คือใช้ AI สกิลจาก Helix ทำเสมอ
+เจ้าของ: "อยากให้เพิ่มในส่วนงาน QA ให้ครบว่าใช้สกิลทดสอบจาก helix ที่เราทำไว้ทั้งหมดในทุกขั้นตอน ... คือใช้ AI สกิลจาก Helix ทำเสมอ
 แต่ก็ยังต้องมี คนคือ QA เป็นผู้อนุมัติสูงสุดในแต่ละด่าน"
 
 | ด่าน | สกิล Helix | agent ทำ (ร่าง) | คน QA อนุมัติ |
@@ -218,8 +218,8 @@ approve." และ "Architecture stays with engineers."
 
 ### 6.1 ใช้ Vibe-Skills ช่วยอย่างไร (ข้อเสนอ ยังไม่ติดตั้ง)
 
-ที่มา: เจ้าของ 21 Oct 2026 "เอาสกิลจาก https://github.com/foryourhealth111-pixel/Vibe-Skills มาใช้ในการช่วยได้อย่างไรบ้าง ฝากดูหน่อย และปรับใส่แผนงานมา"
-· อ่าน README และ LICENSE ของ repo เมื่อ 21 Oct 2026 (อ่านอย่างเดียว ไม่ได้ติดตั้งหรือรัน)
+ที่มา: เจ้าของ "เอาสกิลจาก https://github.com/foryourhealth111-pixel/Vibe-Skills มาใช้ในการช่วยได้อย่างไรบ้าง ฝากดูหน่อย และปรับใส่แผนงานมา"
+· อ่าน README และ LICENSE ของ repo (อ่านอย่างเดียว ไม่ได้ติดตั้งหรือรัน)
 
 **คืออะไร:** ตัวจัดเส้นทางสกิลและลำดับงานสำหรับ Claude Code และ Codex · สัญญาอนุญาต Apache-2.0 (ใช้ฟรี) · ลำดับของมัน: ยืนยัน requirement
 แล้วหยุดจนอนุมัติ → แนะนำขนาดงาน `L` หรือ `XL` → เลือกสกิลจากโฟลเดอร์สกิลในเครื่องให้แต่ละส่วน พร้อมผลที่ต้องได้และวิธีตรวจ → ทำงานและบันทึก
@@ -310,7 +310,7 @@ skills: ols-qa
 | ส่วน | สถานะ | หลักฐาน |
 | :--- | :--- | :--- |
 | repo `pluton-ai-agent` (private) + โค้ด agent ย้ายมาแล้ว | ✅ ยังไม่เปิด Actions | main `658b87c`, เทสต์ 527/527 |
-| App `taskfolio-dev-agent` บน `pluton-timesheet` และ `pluton-ai-agent` | ✅ | หน้า installations "Selected 2 repositories" (21 Oct 2026) |
+| App `taskfolio-dev-agent` บน `pluton-timesheet` และ `pluton-ai-agent` | ✅ | หน้า installations "Selected 2 repositories" |
 | PO/BA triage และ sweep รายวันของ Taskfolio | ✅ รันอยู่ใน pluton-timesheet | `AGENT_TRIAGE_ENABLED`, `AGENT_SWEEP_ENABLED` = true |
 | QA ของ OLS (เขียนเทสเคส, เทส, รีเทส) | 🟡 โค้ดมีแล้ว ยังไม่รันรายวัน | branch `feat/ols-retest-procedure-guards` |
 | ย้าย secret ไป repo ใหม่ | 🟡 workflow ร่างแล้ว รีวิวขอแก้ 1 ข้อ | `feat/agent-secrets-copy` `3412f44af` |
