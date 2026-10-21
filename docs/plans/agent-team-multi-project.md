@@ -103,6 +103,37 @@ graph LR
 | ตัวเขียนกลับ | เขียนเฉพาะสิ่งที่อนุมัติ แล้วอ่านกลับตรวจ | โค้ดล้วน (ไม่ใช่ LLM) |
 | การมองเห็น | สถานะ, เวลา, ค่าใช้จ่าย | Agent Office + สรุปของ PM agent |
 
+## 3a. อ้างอิงหลักการ ADLC: agent ลงมือ คนอนุมัติ
+
+ที่มา: เจ้าของ 21 Oct 2026 ส่งภาพ "SDLC vs ADLC" ของ Limestone Digital (2026) "เอาฝั่งขวามือ มาใช้ในแผนอย่างไรได้บ้าง ... บอกด้วยว่า อ้างอิงหลักการนี้ๆ"
+· ADLC (Agentic Development Lifecycle) = วงจรเดิม แต่ agent ลงมือ และคนอนุมัติที่ประตู · หลักสำคัญในภาพ: "Agents implement. Engineers
+approve." และ "Architecture stays with engineers."
+
+| ขั้น ADLC | ใครทำ | ในแผนเราคือ | สิ่งที่ปรับตามหลักการนี้ |
+| :--- | :--- | :--- | :--- |
+| 01 Define the task | คน | PO/BA ร่าง แล้วคนอนุมัติ | แพ็กเกจต้องมี **ขอบเขต (bounds)**: ส่วนที่แตะได้ สิ่งที่ห้ามแตะ งบเวลา |
+| 02 Agent proposes plan | agent | Tech Lead agent: ไฟล์ แนวทาง ความเสี่ยง | คงเดิม |
+| 03 Engineer approves plan | ประตู | Gate 1 คน Tech Lead ตอบ `passed` | Dev เริ่มไม่ได้จนกว่ามีคำอนุมัติชัดเจน (dispatcher บังคับ) |
+| 04 Agent implements | agent | Dev agent บน branch `agent/<key>` | ทำใน **sandbox ที่แยกและจำกัดสิทธิ์**: runner ของ GitHub ไม่ใช่เครื่องคน, token เฉพาะ repo นั้น |
+| 05 Agent runs checks | agent | Dev รันเทสต์ · QA ใช้สกิล Helix | **แก้จนเทสต์และ CI เขียวก่อนเปิด PR** (เดิมเปิด PR แล้วรอ CI) |
+| 06 Engineer approves PR | ประตู | Gate 3: Tech Lead รีวิว ทีม dev merge | คงเดิม · ไม่มีอะไร merge โดยไม่ผ่านคนรีวิว |
+| 07 Release & learn | ร่วมกัน | QA Lead + PM สรุปรอบ release | เพิ่ม **วงเรียนรู้**: agent ร่างบทเรียนหลังรอบ คนอนุมัติก่อนกลายเป็นกฎของรอบถัดไป |
+
+**ดีอย่างไร** (การประเมินของแผนนี้ = judgment ยืนยันด้วยตัวเลขจาก pilot ในข้อ 9):
+
+- **จับทิศผิดก่อนเสียเวลา:** คนอนุมัติแผนก่อน agent เขียนโค้ด แนวทางผิดแก้ได้ตั้งแต่ร่าง (ขั้น 02 ถึง 03)
+- **คนรีวิวเฉพาะงานที่พร้อม:** agent แก้จนเทสต์และ CI เขียวก่อนเปิด PR เวลาของคนรีวิวใช้กับเนื้องาน (ขั้น 05)
+- **ความผิดพลาดไม่หลุดเข้าระบบ:** ไม่มีอะไรเริ่มก่อนแผนอนุมัติ ไม่มีอะไร merge ก่อนคนรีวิว ทำใน sandbox จำกัดสิทธิ์ (ขั้น 03, 04, 06)
+- **คนทำงานที่ต้องใช้คน:** agent รับงานประจำที่ซ้ำ คนเก็บเวลาไว้กับการออกแบบและการตัดสิน
+- **ดีขึ้นทุกรอบ:** บทเรียนที่คนอนุมัติกลายเป็นกฎของรอบถัดไป ไม่พลาดซ้ำ ไม่ถามซ้ำ (ขั้น 07)
+- **ตรวจย้อนได้:** ทุกประตูมีบันทึกว่าใครอนุมัติอะไรเมื่อไร
+
+**ขอบเขตงานตามหลักการนี้:**
+
+- **งานที่เริ่มให้ agent ทำก่อน:** งานประจำ คือ อัปเกรด dependency, แพตช์ความปลอดภัย, เพิ่มเทสต์, แก้บัค (Q12)
+- **งานที่คงไว้กับคน:** การออกแบบสถาปัตยกรรม และงานขนาด XL agent ร่างได้ แต่คน Tech Lead เป็นผู้ออกแบบและตัดสิน
+- **"Approved rules inform next run":** บทเรียนที่คนอนุมัติ เก็บในสมุดบทเรียนต่อโปรเจกต์ agent ทุกตัวอ่านก่อนเริ่มงานรอบถัดไป
+
 ## 4. บทบาท: agent ทำอะไร คนตัดสินอะไร
 
 แต่ละบทบาทมี agent หนึ่งตัวต่อโปรเจกต์ (หรือมากกว่าเมื่อเพดานอนุญาต) และมี **คนในบทบาทนั้น** เป็นผู้อนุมัติ
@@ -158,14 +189,15 @@ graph LR
 
 | ขั้น | รับเข้า | ส่งออก (ต้องมีครบ) | เสร็จเมื่อ | ไม่ผ่านเมื่อ |
 | :--- | :--- | :--- | :--- | :--- |
-| PO | ตัวงาน + backlog | ลำดับ, เป้าหมาย, AC ระดับผลลัพธ์, ขอบเขตที่ไม่ทำ | คน PO ตอบ `passed` | ขอบเขตไม่มีแหล่งอ้าง |
+| PO | ตัวงาน + backlog | ลำดับ, เป้าหมาย, AC ระดับผลลัพธ์, ขอบเขต (bounds): สิ่งที่แตะได้ สิ่งที่ห้ามแตะ งบเวลา (ADLC 01) | คน PO ตอบ `passed` | ขอบเขตไม่มีแหล่งอ้าง |
 | BA | แพ็กเกจ PO + ลิงก์ design/เอกสาร | AC ทีละข้อพร้อมแหล่ง, flow, edge case, คำถามที่ไม่มีแหล่ง, `Ticket Detail Status` ที่เสนอ | คน BA ตอบ `passed` และคำถามค้าง = 0 | มีข้อใดไม่มีแหล่งแต่ไม่เป็นคำถาม |
 | ขนาดงาน | แพ็กเกจ BA | ขนาดจากทุกบทบาท + ขนาดรวม (สูตรตาม Q6) | คน PM อนุมัติ | บทบาทใดไม่ให้ขนาด |
 | Tech Lead (Gate 1) | แพ็กเกจ BA | ไฟล์ที่แตะ, แนวทาง, ทางเลือกที่ชั่ง, ความเสี่ยง, subtask | คน Tech Lead ตอบ `passed` | ไม่มีทางเลือกที่ชั่ง |
 | QA Lead (Gate 2) | แพ็กเกจ Gate 1 | test plan ผูก AC ทุกข้อ (unit, API, E2E) | คน QA Lead ตอบ `passed` | AC ใดไม่มีเคส |
-| Dev | Gate 1 + Gate 2 | branch `agent/<key>`, เทสต์ที่ fail ก่อนแล้วผ่าน, PR | CI เขียว + Tech Lead รีวิวผ่าน | CI แดง หรือเทสต์ไม่ผูก AC |
+| Dev | Gate 1 + Gate 2 | branch `agent/<key>`, เทสต์ที่ fail ก่อนแล้วผ่าน, CI เขียวบน branch แล้วจึงเปิด PR (ADLC 05) | Tech Lead รีวิวผ่าน | เปิด PR ขณะ CI แดง หรือเทสต์ไม่ผูก AC |
 | QA | PR ที่ merge แล้วบน dev/staging | ผลต่อเคส, หลักฐาน, ร่างคอมเมนต์และสถานะ | คน QA ตอบ `passed` แล้วเขียนกลับสำเร็จ | FAILED ที่ไม่มีแหล่งยืนยัน (ต้องเป็นคำถามถึง PO) |
 | Release | ผลเทสของทุกใบในรอบ | สรุปรอบ, ใบที่ผ่าน/ไม่ผ่าน, แผนวัน release | คน PM/PO ตัดสินวัน | มีใบที่ไม่ผ่านในรอบ |
+| เรียนรู้ | ผลของรอบ release | บทเรียน (สิ่งที่พลาด สิ่งที่ถามซ้ำ) และกฎที่เสนอ (ADLC 07) | คนอนุมัติแล้วเก็บในสมุดบทเรียน | บทเรียนไม่มีหลักฐานจากรอบจริง |
 
 ## 6. เครื่องมือและสิทธิ์ของ agent
 
@@ -291,8 +323,8 @@ skills: ols-qa
 | ขั้น | ทำอะไร | เสร็จเมื่อ | ต้องได้ก่อน |
 | :---: | :--- | :--- | :--- |
 | 0 | ทีมตกลงแผนนี้และตอบคำถามข้อ 12 | คำตอบทุกข้อบันทึกในแผน | ประชุมทีม |
-| 1 | ปิดงานแยก repo: คัดลอก secret, ทดลองรันจาก repo ใหม่, ปิด agent ฝั่งเดิม | triage และ sweep รันจาก pluton-ai-agent | ขั้น 0 |
-| 2 | ไฟล์ตั้งค่าต่อโปรเจกต์ (ข้อ 7) + ตัวรับงาน Jira ร่วม GitHub + เครื่องมือ 6 ตัว (ข้อ 6) | Taskfolio และ OLS อยู่ในรูปไฟล์เดียวกัน, เทสต์ของเครื่องมือผ่าน | ขั้น 1 |
+| 1 | ปิดงานแยก repo: คัดลอก secret, ทดลองรันจาก repo ใหม่, ปิด agent ฝั่งเดิม · ตั้ง branch protection บน main และ pin เวอร์ชัน CLI ของ agent (ข้อ 14) | triage และ sweep รันจาก pluton-ai-agent · App push ตรงเข้า main ไม่ได้ | ขั้น 0 |
+| 2 | ไฟล์ตั้งค่าต่อโปรเจกต์ (ข้อ 7) + ตัวรับงาน Jira ร่วม GitHub + เครื่องมือ 6 ตัว (ข้อ 6) · กันจากข้อ 14: ตัดอักขระซ่อน, ลิงก์ run ในทุก commit, sandbox และ approval ต่อบทบาท, skill จาก allowlist ที่ pin sha | Taskfolio และ OLS อยู่ในรูปไฟล์เดียวกัน, เทสต์ของเครื่องมือผ่าน | ขั้น 1 |
 | 3 | ประตูอนุมัติหลายคน: approver ต่อบทบาท, `draft_submit`, `approval_read` | คนสองคนต่างบทบาทอนุมัติคนละขั้นได้ | Q2, Q3 |
 | 4 | QA ของ OLS รันรายวัน | 1 ใบเดินครบถึงเขียนกลับ Jira หลัง `passed` | ขั้น 2, 3 |
 | 5 | PO + BA ของ OLS (AC, คำถาม, ขนาดร่วม) | 1 story ถึง Details Provided หลังคนอนุมัติ | Q4, Q6 |
@@ -312,10 +344,12 @@ skills: ols-qa
 | Q5 | org `SkillLane` ติดตั้ง App ให้ `ols-monorepo` ได้ไหม และนาที Actions / spending limit ของ org เท่าไร | PR ของ agent ใช้โควตาของ org (A2, A8) | 6 |
 | Q6 | รวมขนาดงานจากหลายบทบาทเป็นขนาดเดียวอย่างไร (เฉลี่ย, ค่ามากสุด, หรือสูตร size marker เดิม) | ตัดสินแล้วว่าทำร่วมกัน แต่ยังไม่มีสูตร | 5 |
 | Q7 | โปรเจกต์ถัดไปคืออะไร และ site `humanintelligence` ต้องเปิดสิทธิ์ให้ agent อ่านไหม | A1: งานที่เปิดอยู่ของเจ้าของมีแค่ OLS | 9 |
-| Q8 | เพดานงานพร้อมกัน, turn ต่อ job, รอบ revise ต่อวัน (ข้อ 8.1) | บัญชี Max เดียวรับทุกงาน (R83) | 2 |
+| Q8 | เพดานงานพร้อมกัน, turn ต่อ job, รอบ revise ต่อวัน, ขนาด PR สูงสุด (ข้อ 8.1, ข้อ 14) | บัญชี Max เดียวรับทุกงาน (R83) และรีวิวของ AI พลาดง่ายเมื่อ PR ใหญ่ | 2 |
 | Q9 | งานที่ต้องเปิดเว็บใน VPN ของลูกค้าคงบน Mac ได้ไหม (Mac ต้องเปิดและต่อ VPN) | A7: GitHub runner เข้าไม่ถึง | 4 |
 | Q10 | PM สรุปสถานะส่งที่ไหน (Slack channel ไหน, ความถี่) | ยังไม่มีช่องทางของทีม | 7 |
+| Q12 | ชนิดงานไหนให้ agent ทำก่อน และงานไหนคงไว้กับคน (ข้อ 3a) | ADLC แนะนำงานประจำก่อน สถาปัตยกรรมอยู่กับคน | 4 ถึง 6 |
 | Q11 | ทดลอง Vibe-Skills แบบแยกก่อนใช้จริงไหม (ข้อ 6.1) | ต้องติดตั้งโค้ดภายนอกและวัดผลกับ Claude เอง | 2 |
+| Q13 | ปิด network ระหว่างที่ LLM ทำงานบน GitHub runner ได้ไหม โดยไม่เสียเงิน (ข้อ 14) | Codex ปิดเป็นค่าเริ่มต้น เรายังไม่รู้วิธีฟรีบน runner | 2 |
 
 ## 13. ความเสี่ยงและค่าใช้จ่าย
 
@@ -328,6 +362,78 @@ skills: ols-qa
 | credential ใหม่ (Jira, Slack) รั่ว | ต่ำ | สูง | เก็บเป็น secret ของ repo นี้เท่านั้น, ลง RISK_REGISTER ก่อนเปิด |
 | คนไม่ตอบร่าง งานค้าง | กลาง | ต่ำ | PM ชี้งานค้างในสรุป |
 | งานใน VPN รันไม่ได้เมื่อ Mac ปิด | สูง | ต่ำ | เฉพาะขั้นเทสบน dev, ขั้นอื่นรันบน GitHub (Q9) |
+| skill จากภายนอกมีโค้ดอันตราย (บทเรียน OpenClaw, ข้อ 14.4) | กลาง | สูง | ใช้เฉพาะ skill ใน allowlist ที่ pin sha, อ่านก่อนใช้ครั้งแรก, ไม่อัปเดตเอง |
 
 **ค่าใช้จ่าย:** ใช้บัญชี Claude Max เดิม (R80) และนาที GitHub Actions ฟรีของ repo ส่วนตัว · PR ใน repo ของ org ใช้โควตาของ org (Q5) ·
 ไม่มีบริการเสียเงินใหม่
+
+## 14. วิเคราะห์ AI Agent ยอดนิยม 3 อันดับ: เอาข้อดีมาใช้ กันข้อด้อย
+
+ระดับแหล่ง: **⬛ เอกสารทางการ** ของผู้ผลิต · **◻ รีวิวหรือข่าว** (ใช้ประกอบ ไม่ใช้ตัดสินลำพัง) · สถานะ: **มีแล้ว** = แผนนี้มีอยู่ ·
+**เพิ่มใหม่** = เพิ่มเข้าขั้นหรือคำถามที่ระบุ
+
+### 14.1 เกณฑ์เลือก 3 อันดับ
+
+เกณฑ์เดียว: สัดส่วนนักพัฒนาที่ใช้ agent ตัวนั้นในงานจริง จาก JetBrains Developer Ecosystem Survey 2026 (นักพัฒนามากกว่า 15,000 คน,
+พ.ค. ถึง ก.ค. 2026) ถ้านับดาวบน GitHub คำตอบจะต่างไป: OpenClaw มีดาวมากที่สุด (ประมาณ 385,000 ดาว ณ ส.ค. 2026 ◻) จึงแยกเป็นบทเรียนในข้อ 14.4
+
+| อันดับ | Agent | ใช้ในงาน | หลักฐานเสริม | แหล่ง |
+| :---: | :--- | :---: | :--- | :--- |
+| 1 | Claude Code | 39% | ม.ค. 2026 อยู่ที่ 18%, เป็นเครื่องมือหลักของ 31% | ⬛ JetBrains Research, ส.ค. 2026 |
+| 2 | GitHub Copilot (agent) | 21% | ลดจาก 29% เมื่อปีก่อน แต่คนรู้จัก 79% | ⬛ JetBrains Research, ส.ค. 2026 |
+| 3 | OpenAI Codex | 16% | ม.ค. 2026 อยู่ที่ 3%, ผู้ใช้รายสัปดาห์เกิน 5 ล้านคน (2 มิ.ย. 2026) | ⬛ JetBrains Research · ◻ Constellation Research อ้าง OpenAI |
+| (4) | Cursor | 12% | ไม่นับ เพราะอยู่นอก 3 อันดับ | ⬛ JetBrains Research |
+
+### 14.2 ข้อดีที่นำมาใช้
+
+| # | Agent | จุดเด่น | แหล่ง | ใช้ในแผนเราอย่างไร | สถานะ |
+| :---: | :--- | :--- | :---: | :--- | :--- |
+| S1 | Claude Code | เด่นเรื่องคิดลึก ดีบัก และงานสถาปัตยกรรม | ◻ Faros | บทบาท Tech Lead และ Dev รันบน Claude | มีแล้ว ข้อ 6 |
+| S2 | Claude Code | sandbox ระดับ OS แยกทั้งไฟล์และ network, เขียนได้เฉพาะในโฟลเดอร์งาน | ⬛ Claude Code docs | worker เปิด sandbox และเขียนได้เฉพาะ workspace ของ job | เพิ่มใหม่ ขั้น 2 |
+| S3 | Claude Code | คำสั่ง network อย่าง curl และ wget ไม่อนุมัติอัตโนมัติ | ⬛ Claude Code docs | worker ใช้ allowlist เครื่องมือ ไม่มี MCP หรือ WebFetch | มีแล้ว ข้อ 13 (R107) |
+| S4 | GitHub Copilot | รับงานจาก issue แล้วเปิด PR และแก้ตามคอมเมนต์ใน PR | ⬛ GitHub app card | Dev รับงานจากประตู แก้ตามคอมเมนต์รีวิวใน PR | มีแล้ว ข้อ 5 |
+| S5 | GitHub Copilot | เข้าได้ repo เดียว เขียนได้ branch เดียว เข้า main ไม่ได้ และใช้ secret เฉพาะ environment ของตัวเอง | ⬛ GitHub app card | token ของ App ต่อ repo + branch protection บน main + secret ใน environment `agent` เท่านั้น | เพิ่มใหม่ ขั้น 1 (R82) |
+| S6 | GitHub Copilot | workflow จาก PR ของ agent ต้องมีคนที่มีสิทธิ์เขียนกดอนุมัติก่อนรัน | ⬛ GitHub app card | repo ของ org ตั้งค่านี้ไว้ กันโควตา Actions ของ org | เพิ่มใหม่ ขั้น 6 (Q5) |
+| S7 | GitHub Copilot | กรองอักขระซ่อนใน issue และคอมเมนต์ที่ใช้ซ่อนคำสั่ง | ⬛ GitHub app card | `item_read` ตัดอักขระ zero-width และ bidi ก่อนส่งให้ LLM | เพิ่มใหม่ ขั้น 2 |
+| S8 | GitHub Copilot | commit ระบุ agent เป็นผู้เขียน คนสั่งเป็น co-author และมีลิงก์ log ของ session | ⬛ GitHub app card | ทุก commit ของ agent มี trailer ลิงก์ run และชื่อคนที่อนุมัติ | เพิ่มใหม่ ขั้น 2 |
+| S9 | OpenAI Codex | ทำงานหลายขั้นได้ต่อเนื่อง รันเทสต์และแก้วนจนผ่าน | ◻ Faros | Dev แก้จนเทสต์และ CI เขียวก่อนเปิด PR | มีแล้ว ข้อ 3a (ADLC 05) |
+| S10 | OpenAI Codex | แยก setup ที่ต่อ network ได้ ออกจากช่วง agent ที่ไม่มี network และ secret ใช้ได้เฉพาะช่วง setup | ⬛ Codex docs | LLM ไม่ถือ token ที่เขียนได้ · ปิด network ช่วง LLM ทำงาน | มีแล้ว ข้อ 2 · เพิ่มใหม่ Q13 |
+| S11 | OpenAI Codex | แยก sandbox mode กับ approval policy เป็นสองชั้นชัดเจน | ⬛ Codex docs | ไฟล์ตั้งค่าระบุ sandbox และ approval ต่อบทบาท | เพิ่มใหม่ ขั้น 2 |
+| S12 | OpenAI Codex | คนทำงานที่ไม่ใช่นักพัฒนาคิดเป็นประมาณ 20% ของผู้ใช้ | ◻ Constellation Research | รองรับบทบาท PO, BA และ PM ไม่ใช่แค่ Dev | มีแล้ว ข้อ 4 |
+
+### 14.3 ข้อด้อยและแนวป้องกัน
+
+| # | Agent | ข้อด้อย | แหล่ง | ถ้าเกิดกับเรา | แนวป้องกัน | สถานะ |
+| :---: | :--- | :--- | :---: | :--- | :--- | :--- |
+| W1 | Claude Code | rate limit ถูกคุมเข้มกับผู้ใช้ที่รันต่อเนื่องเบื้องหลัง ชนเพดานกลางงานแล้วรอจน reset | ◻ TechCrunch 28 ก.ค. 2025 | agent รันทุกวันบนบัญชี Max เดียว งานค้างทั้งทีม | เพดานข้อ 8.1 · ชนโควตาแล้วติด `agent:blocked` และหยุด ไม่ลองซ้ำ · PM รายงาน | มีแล้ว ข้อ 8.1 · เพิ่มใหม่ ขั้น 2 |
+| W2 | Claude Code | ระบบสิทธิ์เป็นประตู ไม่ใช่ sandbox และไม่ดูว่าคำสั่งอันตรายจากผลของมัน | ⬛ Claude Code docs | คำสั่งที่อยู่ใน allowlist แต่ทำลายข้อมูล | เปิด sandbox (S2) · บน Mac ให้ token อ่านอย่างเดียวและรันเฉพาะขั้นเทส | เพิ่มใหม่ ขั้น 2, ขั้น 4 (Q9) |
+| W3 | Claude Code | ผู้ใช้ต้องรีวิวคำสั่งเองก่อนอนุมัติ | ⬛ Claude Code docs | รันอัตโนมัติแล้วไม่มีคนดู | คนอนุมัติผลที่ประตู · เขียนกลับผ่านโค้ด `writeback_apply` เท่านั้น | มีแล้ว ข้อ 2 |
+| W4 | GitHub Copilot | รีวิวโค้ดพลาดปัญหาเมื่อ PR ใหญ่ และมี false positive | ⬛ GitHub app card | Tech Lead agent ปล่อยบัคหรือสั่งแก้สิ่งที่ไม่ผิด | ผลรีวิวของ agent เป็นข้อเสนอ คน Tech Lead อนุมัติ · ทุกข้อต้องมี `path:line` และหลักฐาน · เพดานขนาด PR | มีแล้ว ข้อ 4 · เพิ่มใหม่ Q8 |
+| W5 | GitHub Copilot | ขอบเขตจำกัด โครงสร้างโค้ดหรือภาษาที่ไม่คุ้นทำได้ไม่ดี | ⬛ GitHub app card | โปรเจกต์ใหม่ใช้ stack ที่ agent ทำได้ไม่ดี | ไฟล์ตั้งค่าระบุ stack ที่รองรับ นอกนั้นติด `agent:blocked` ถามคน | เพิ่มใหม่ ขั้น 2 |
+| W6 | GitHub Copilot | โควตาและการเลือก model ไม่โปร่งใส ปรับแต่งได้น้อย | ◻ Faros | ผลงานเปลี่ยนเพราะ model เปลี่ยนโดยไม่รู้ | ไฟล์ตั้งค่ากำหนด model ต่อบทบาท และบันทึก model ทุก run | เพิ่มใหม่ ขั้น 2 |
+| W7 | OpenAI Codex | ค่าใช้จ่ายของงานยาวคาดเดายาก | ◻ Faros | โควตาหมดเร็วโดยไม่มีใครเห็น | บันทึก turn และนาทีต่อใบ PM สรุปทุกสัปดาห์ · ไม่มีบริการเสียเงินใหม่ | มีแล้ว ข้อ 8.1 · เพิ่มใหม่ ขั้น 7 |
+| W8 | OpenAI Codex | full access คือปิดทั้ง sandbox และ approval รวมกัน ไม่เหลือขอบเขต | ⬛ Codex docs | ตั้งค่าผิดครั้งเดียว agent ทำได้ทุกอย่าง | ห้ามค่าคู่นี้ในไฟล์ตั้งค่า มีเทสต์ตรวจ | เพิ่มใหม่ ขั้น 2 |
+| W9 | OpenAI Codex | secret ใช้ไม่ได้ในช่วง agent ทำให้งานที่ต้องใช้ credential ติด | ◻ Rubin Lake | งานเขียนกลับต้องใช้ token | งานที่ต้องใช้ credential ทำผ่านเครื่องมือที่เป็นโค้ด ไม่ให้ LLM ถือ | มีแล้ว ข้อ 6 |
+
+### 14.4 บทเรียนนอก 3 อันดับ: OpenClaw (agent ที่มีดาวบน GitHub มากที่สุด)
+
+| # | เหตุที่เกิด | แหล่ง | ถ้าเกิดกับเรา | แนวป้องกัน | สถานะ |
+| :---: | :--- | :---: | :--- | :--- | :--- |
+| L1 | skill อันตรายในคลัง ClawHub: 341 รายการ (Koi Security ม.ค. 2026), ราว 17% ของตัวอย่าง (Bitdefender) | ◻ เว็บติดตามเหตุ | Vibe-Skills (ข้อ 6.1) และ skill อื่นมาจาก repo ภายนอก | ใช้เฉพาะ skill ใน allowlist ที่ pin commit sha · อ่านเนื้อ skill ก่อนใช้ครั้งแรก · ไม่ติดตั้งหรืออัปเดตเอง · ทดลองแบบแยกก่อน (Q11) | เพิ่มใหม่ ขั้น 2 |
+| L2 | instance เปิดสู่ internet และข้ามการยืนยันตัวตนได้ (42,900 instance, SecurityScorecard เม.ย. 2026) | ◻ เว็บติดตามเหตุ | มีช่องให้คนนอกสั่ง agent | agent ไม่มี port รับคำสั่ง รับงานผ่าน event ของ GitHub เท่านั้น | มีแล้ว ข้อ 3 |
+| L3 | ช่องโหว่ RCE คลิกเดียว CVE-2026-25253 แก้ใน v2026.1.29 | ◻ เว็บติดตามเหตุ | CLI ของ agent ที่ไม่อัปเดตมีช่องโหว่ | pin เวอร์ชัน CLI และอัปเดตผ่าน PR ที่มีคนรีวิว | เพิ่มใหม่ ขั้น 1 |
+| L4 | มัลแวร์ขโมยไฟล์ตั้งค่าของ agent | ◻ เว็บติดตามเหตุ | ไฟล์ตั้งค่ารั่วพร้อม credential | ไฟล์ตั้งค่าไม่มี secret · secret อยู่ใน GitHub Actions secrets เท่านั้น | มีแล้ว ข้อ 7 |
+
+**แหล่งอ้างอิง:** [JetBrains Research: AI Coding Agents Adoption Trends](https://blog.jetbrains.com/research/2026/08/ai-coding-agent-adoption-2026/) ·
+[Constellation Research: Codex 5 million weekly users](https://constellationr.com/insights/news/openai-touts-broadening-codex-usage-5-million-weekly-active-users) ·
+[GitHub: Application card, Copilot Agents](https://docs.github.com/en/copilot/responsible-use/copilot-coding-agent) ·
+[OpenAI: Codex security](https://developers.openai.com/codex/security) ·
+[OpenAI: Codex sandboxing](https://developers.openai.com/codex/concepts/sandboxing.md) ·
+[Claude Code: Security](https://code.claude.com/docs/en/security) ·
+[Claude Code: Secure deployment](https://code.claude.com/docs/en/agent-sdk/secure-deployment) ·
+[Faros: Best AI Coding Agents 2026](https://www.faros.ai/blog/best-ai-coding-agents-2026) ·
+[TechCrunch: Claude Code rate limits](https://techcrunch.com/2025/07/28/anthropic-unveils-new-rate-limits-to-curb-claude-code-power-users/) ·
+[Rubin Lake: OpenAI Codex](https://rubinlake.com/it/technology-radar/developer-ai-and-delivery/openai-codex) ·
+[clawdocs: Known vulnerabilities](https://clawdocs.org/security/known-vulnerabilities) ·
+[AI Incident Database: OpenClaw skills ecosystem](https://incidentdatabase.ai/fr/entities/openclaw-skills-ecosystem/) ·
+[glukhov.org: OpenClaw stars](https://glukhov.org/ai-systems/comparisons/openclaw-hermes-alternatives-popularity/)
