@@ -1,0 +1,191 @@
+{
+  "tools": [
+    {
+      "name": "intake_list",
+      "description": "List work items that carry the agent label for one role in one configured project, read only",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Project key from the per-project config, for example OLS or taskfolio",
+            "minLength": 2,
+            "maxLength": 40
+          },
+          "role": {
+            "type": "string",
+            "description": "Role whose intake rule to apply",
+            "maxLength": 1000,
+            "enum": [
+              "po",
+              "ba",
+              "tech_lead",
+              "dev",
+              "qa_lead",
+              "qa",
+              "pm"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum items returned",
+            "minimum": 1,
+            "maximum": 50
+          }
+        },
+        "required": [
+          "project",
+          "role"
+        ]
+      }
+    },
+    {
+      "name": "item_read",
+      "description": "Read one work item in full: description, acceptance criteria, comments, change history and links, read only",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Project key from the per-project config",
+            "minLength": 2,
+            "maxLength": 40
+          },
+          "key": {
+            "type": "string",
+            "description": "Jira key or GitHub issue or pull request number",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "project",
+          "key"
+        ]
+      }
+    },
+    {
+      "name": "draft_submit",
+      "description": "Send a role's draft and its proposed write-back actions to the human approver of that role in a Slack DM thread, writing nothing to Jira or GitHub",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Project key",
+            "minLength": 2,
+            "maxLength": 40
+          },
+          "key": {
+            "type": "string",
+            "description": "Work item key",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "role": {
+            "type": "string",
+            "description": "Role that wrote the draft",
+            "maxLength": 1000,
+            "enum": [
+              "po",
+              "ba",
+              "tech_lead",
+              "dev",
+              "qa_lead",
+              "qa",
+              "pm"
+            ]
+          },
+          "draft": {
+            "type": "string",
+            "description": "Draft text shown verbatim to the approver",
+            "minLength": 1,
+            "maxLength": 12000
+          },
+          "actions": {
+            "type": "array",
+            "description": "Proposed write-back actions, each body shown verbatim"
+          }
+        },
+        "required": [
+          "project",
+          "key",
+          "role",
+          "draft",
+          "actions"
+        ]
+      }
+    },
+    {
+      "name": "approval_read",
+      "description": "Read whether the configured human approver replied passed in the item's thread after the latest draft, and the instruction lines after it",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "thread": {
+            "type": "string",
+            "description": "Slack thread id returned by draft_submit",
+            "minLength": 1,
+            "maxLength": 40,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          }
+        },
+        "required": [
+          "thread"
+        ]
+      }
+    },
+    {
+      "name": "writeback_apply",
+      "description": "Apply exactly the approved actions of one draft to Jira, GitHub or the QA sheet after approval_read returned passed, then read every write back",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "thread": {
+            "type": "string",
+            "description": "Approved draft's thread id",
+            "minLength": 1,
+            "maxLength": 40,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          }
+        },
+        "required": [
+          "thread"
+        ]
+      }
+    },
+    {
+      "name": "pr_open",
+      "description": "Open a pull request from the agent branch in the project's code repository after Gate 1 and Gate 2 passed",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Project key",
+            "minLength": 2,
+            "maxLength": 40
+          },
+          "key": {
+            "type": "string",
+            "description": "Work item key",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "branch": {
+            "type": "string",
+            "description": "Agent branch name, agent/<key>",
+            "minLength": 7,
+            "maxLength": 80,
+            "pattern": "^agent/[A-Za-z0-9._-]+$"
+          }
+        },
+        "required": [
+          "project",
+          "key",
+          "branch"
+        ]
+      }
+    }
+  ]
+}

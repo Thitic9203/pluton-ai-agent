@@ -1,0 +1,162 @@
+{
+  "validation_rules": {
+    "intake_list": [
+      {
+        "parameter": "project",
+        "rules": {
+          "minLength": 2,
+          "maxLength": 40,
+          "required": true
+        }
+      },
+      {
+        "parameter": "role",
+        "rules": {
+          "maxLength": 1000,
+          "required": true,
+          "enum": [
+            "po",
+            "ba",
+            "tech_lead",
+            "dev",
+            "qa_lead",
+            "qa",
+            "pm"
+          ]
+        }
+      },
+      {
+        "parameter": "limit",
+        "rules": {
+          "minimum": 1,
+          "maximum": 50
+        }
+      }
+    ],
+    "item_read": [
+      {
+        "parameter": "project",
+        "rules": {
+          "minLength": 2,
+          "maxLength": 40,
+          "required": true
+        }
+      },
+      {
+        "parameter": "key",
+        "rules": {
+          "minLength": 1,
+          "maxLength": 40,
+          "required": true
+        }
+      }
+    ],
+    "draft_submit": [
+      {
+        "parameter": "project",
+        "rules": {
+          "minLength": 2,
+          "maxLength": 40,
+          "required": true
+        }
+      },
+      {
+        "parameter": "key",
+        "rules": {
+          "minLength": 1,
+          "maxLength": 40,
+          "required": true
+        }
+      },
+      {
+        "parameter": "role",
+        "rules": {
+          "maxLength": 1000,
+          "required": true,
+          "enum": [
+            "po",
+            "ba",
+            "tech_lead",
+            "dev",
+            "qa_lead",
+            "qa",
+            "pm"
+          ]
+        }
+      },
+      {
+        "parameter": "draft",
+        "rules": {
+          "minLength": 1,
+          "maxLength": 12000,
+          "required": true
+        }
+      },
+      {
+        "parameter": "actions",
+        "rules": {
+          "minItems": 0,
+          "maxItems": 1000,
+          "required": true
+        }
+      }
+    ],
+    "approval_read": [
+      {
+        "parameter": "thread",
+        "rules": {
+          "minLength": 1,
+          "maxLength": 40,
+          "required": true,
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+          "min_length": 36,
+          "max_length": 36
+        }
+      }
+    ],
+    "writeback_apply": [
+      {
+        "parameter": "thread",
+        "rules": {
+          "minLength": 1,
+          "maxLength": 40,
+          "required": true,
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+          "min_length": 36,
+          "max_length": 36
+        }
+      }
+    ],
+    "pr_open": [
+      {
+        "parameter": "project",
+        "rules": {
+          "minLength": 2,
+          "maxLength": 40,
+          "required": true
+        }
+      },
+      {
+        "parameter": "key",
+        "rules": {
+          "minLength": 1,
+          "maxLength": 40,
+          "required": true
+        }
+      },
+      {
+        "parameter": "branch",
+        "rules": {
+          "minLength": 7,
+          "maxLength": 80,
+          "required": true,
+          "pattern": "^agent/[A-Za-z0-9._-]+$"
+        }
+      }
+    ]
+  }
+}

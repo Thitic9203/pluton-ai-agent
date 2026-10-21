@@ -1,0 +1,50 @@
+{
+  "goal": "An always-on AI agent team that takes work from several projects in Jira and GitHub and drafts it through PO, BA, Tech Lead, Dev, QA Lead, QA and PM roles, with a human in each role approving before anything is written back",
+  "description": "Each work item flows through role stages with human approval gates; agents run daily on GitHub Actions; per-project config adds a project without code changes; PM watches all projects.",
+  "tasks": [
+    "Poll Jira projects and GitHub repositories for items labelled agent",
+    "Draft acceptance criteria, business rules and open questions as BA",
+    "Prioritise backlog and draft outcome goals as PO",
+    "Draft technical approach and risks and review pull requests as Tech Lead",
+    "Write code test-first and open a pull request as Dev",
+    "Draft test plans mapped to every acceptance criterion as QA Lead",
+    "Write test cases, run tests and retests, and draft results as QA",
+    "Summarise status, flag stale or late work and draft release plans across projects as PM",
+    "Send each draft to the human approver and wait for passed before writing back",
+    "Estimate work size jointly across roles"
+  ],
+  "constraints": {
+    "max_response_time": 3600000,
+    "budget_per_task": 0.0,
+    "quality_threshold": 0.95,
+    "concurrent_tasks": 3,
+    "security_level": "high",
+    "compliance_requirements": ["human approval before every write-back", "no new paid service"]
+  },
+  "team_size": 7,
+  "performance_requirements": {
+    "high_throughput": false,
+    "fault_tolerance": true,
+    "low_latency": false,
+    "scalability": "medium",
+    "availability": 0.95
+  },
+  "safety_requirements": [
+    "Human oversight for critical decisions",
+    "Audit logging for all operations",
+    "Input validation and sanitization",
+    "Error handling and graceful degradation",
+    "Rate limiting for external APIs"
+  ],
+  "integration_requirements": [
+    "Jira REST API read and drafted write-back",
+    "GitHub API through a GitHub App",
+    "Slack DM for approvals",
+    "Google Sheets for QA test cases"
+  ],
+  "scale_requirements": {
+    "initial_users": 7,
+    "peak_concurrent_users": 10,
+    "requests_per_hour": 100
+  }
+}
